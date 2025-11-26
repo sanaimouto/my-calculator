@@ -1,319 +1,3 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>多功能工具箱</title>
-    <link rel="shortcut icon" href="icon.ico" type="image/x-icon">
-    <style>
-        /* 保留最初設計的樣式 */
-        :root {
-            --primary-color: #2c3e50;
-            --accent-color: #3498db;
-            --bg-color: #f4f7f6;
-            --panel-bg: #ffffff;
-            --border-radius: 8px;
-        }
-
-        body {
-            font-family: "Segoe UI", "Microsoft JhengHei", sans-serif;
-            background-color: var(--bg-color);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-            min-height: 100vh;
-        }
-
-        .container {
-            background-color: var(--panel-bg);
-            width: 100%;
-            max-width: 680px;
-            border-radius: var(--border-radius);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* 頂部功能列 */
-        .header-bar {
-            padding: 10px;
-            background: #eef2f5;
-            display: flex;
-            justify-content: flex-end;
-            border-bottom: 1px solid #ddd;
-        }
-        
-        .btn-pop {
-            background: #95a5a6;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-        }
-        .btn-pop:hover { background: #7f8c8d; }
-
-        /* 分頁導航 */
-        .tabs {
-            display: flex;
-            background-color: var(--primary-color);
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 15px;
-            border: none;
-            background: none;
-            color: #bdc3c7;
-            cursor: pointer;
-            font-size: 16px;
-            transition: 0.3s;
-            border-bottom: 3px solid transparent;
-        }
-
-        .tab-btn:hover {
-            background-color: rgba(255,255,255,0.1);
-            color: white;
-        }
-
-        .tab-btn.active {
-            color: white;
-            border-bottom: 3px solid var(--accent-color);
-            background-color: rgba(255,255,255,0.05);
-        }
-
-        /* 通用表單元素 */
-        .tab-content {
-            padding: 20px;
-            display: none;
-            flex-direction: column;
-            flex-grow: 1;
-        }
-        .tab-content.active {
-            display: flex;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-            color: #34495e;
-        }
-        input[type="text"], select, textarea {
-            width: 100%;
-            padding: 10px;
-            box-sizing: border-box;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        textarea { resize: vertical; }
-        
-        button.action-btn {
-            width: 100%;
-            padding: 12px;
-            background-color: var(--accent-color);
-            color: white;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: 0.2s;
-            margin-bottom: 10px;
-        }
-        button.action-btn:hover { background-color: #2980b9; }
-        button.secondary { background-color: #95a5a6; }
-        button.secondary:hover { background-color: #7f8c8d; }
-        button.danger { background-color: #e74c3c; }
-        button.danger:hover { background-color: #c0392b; }
-        button:disabled { background-color: #bdc3c7; cursor: not-allowed; }
-
-        /* 結果顯示區 */
-        .result-box {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 4px;
-            border-left: 5px solid var(--accent-color);
-            margin: 15px 0;
-            font-size: 18px;
-            font-weight: bold;
-            color: #2c3e50;
-        }
-
-        /* 歷史紀錄列表 */
-        .history-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            border: 1px solid #eee;
-            border-radius: 4px;
-            max-height: 150px;
-            overflow-y: auto;
-            flex: 1;
-        }
-        .history-list li {
-            padding: 8px 10px;
-            border-bottom: 1px solid #eee;
-            font-size: 13px;
-            color: #555;
-        }
-        .history-list li:first-child { background-color: #eaf2f8; }
-
-        /* 計算機樣式 */
-        .calc-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            flex: 1;
-        }
-        .calc-display {
-            background: #f0f0f0;
-            padding: 15px;
-            text-align: right;
-            font-size: 24px;
-            border-radius: 4px;
-            margin-bottom: 10px;
-            min-height: 60px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-        .calc-expr { font-size: 14px; color: #7f8c8d; height: 20px; }
-        .calc-btn {
-            font-size: 20px;
-            border: 1px solid #ddd;
-            background: white;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .calc-btn:active { background: #eee; }
-        .calc-btn.op { background: #ecf0f1; color: var(--primary-color); }
-        .calc-btn.eq { background: var(--accent-color); color: white; }
-
-        /* 記事本 */
-        .memo-area {
-            flex: 1;
-            margin-bottom: 10px;
-            font-family: monospace;
-            line-height: 1.5;
-        }
-        
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <div class="header-bar">
-        <button class="btn-pop" onclick="openPopup()">📌 開啟獨立小視窗</button>
-    </div>
-
-    <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('pricing')">📊 定價計算</button>
-        <button class="tab-btn" onclick="switchTab('link')">🔗 外連轉換</button>
-        <button class="tab-btn" onclick="switchTab('calc')">📟 計算機</button>
-        <button class="tab-btn" onclick="switchTab('memo')">📝 記事本</button>
-    </div>
-
-    <div id="pricing" class="tab-content active">
-        <div class="form-group">
-            <label>選擇計價模式：</label>
-            <select id="modeSelector" onchange="updatePricingFields()">
-                <option value="0">通販計價計算器</option>
-                <option value="1">中堅CD計價計算器</option>
-                <option value="2">中堅船版書籍計算器</option>
-                <option value="3">會場代購計價計算器</option>
-            </select>
-        </div>
-
-        <div class="form-group">
-            <input type="text" id="jpyInput" placeholder="日幣售價（可輸入算式，如 6820/1.1）">
-        </div>
-        <div class="form-group" id="jpShipGroup">
-            <input type="text" id="jpShipInput" placeholder="日本國內運費（日幣）">
-        </div>
-        <div class="form-group" id="rateGroup">
-            <input type="text" id="rateInput" placeholder="目前匯率">
-        </div>
-        <div class="form-group" id="shipGroup">
-            <input type="text" id="shipInput" placeholder="國際運費（台幣）">
-        </div>
-
-        <button class="action-btn" onclick="calculatePrice()">計算</button>
-        
-        <div class="result-box" id="priceResult">建議售價：</div>
-
-        <label>歷史紀錄：</label>
-        <ul class="history-list" id="pricingHistory"></ul>
-        <div style="margin-top: 10px; display: flex; gap: 10px;">
-            <button class="action-btn secondary" onclick="clearPricingInputs()">🧹 清除輸入</button>
-            <button class="action-btn danger" onclick="clearHistory()">🗑️ 清空紀錄</button>
-        </div>
-    </div>
-
-    <div id="link" class="tab-content">
-        <div class="form-group">
-            <label>Google 圖片分享連結：</label>
-            <div style="display: flex; gap: 5px;">
-                <input type="text" id="linkInput" placeholder="貼上連結...">
-                <button class="action-btn secondary" style="width: 80px; margin:0;" onclick="pasteFromClipboard()">貼上</button>
-            </div>
-        </div>
-        <div style="display: flex; gap: 10px;">
-            <button class="action-btn" onclick="convertLink()">轉換</button>
-            <button class="action-btn secondary" id="copyLinkBtn" onclick="copyLink()" disabled>📋 複製</button>
-        </div>
-        
-        <div class="form-group" style="margin-top: 15px;">
-            <label>轉換結果：</label>
-            <textarea id="linkOutput" rows="4" readonly></textarea>
-        </div>
-        <button class="action-btn secondary" onclick="document.getElementById('linkInput').value=''; document.getElementById('linkOutput').value='';">🧹 清除</button>
-    </div>
-
-    <div id="calc" class="tab-content">
-        <div class="calc-display">
-            <div class="calc-expr" id="calcExpr"></div>
-            <div id="calcResult">0</div>
-        </div>
-        <div class="calc-grid">
-            <button class="calc-btn op" onclick="calcInput('AC')">AC</button>
-            <button class="calc-btn op" onclick="calcInput('(')">(</button>
-            <button class="calc-btn op" onclick="calcInput(')')">)</button>
-            <button class="calc-btn op" onclick="calcInput('DEL')">←</button>
-
-            <button class="calc-btn" onclick="calcInput('7')">7</button>
-            <button class="calc-btn" onclick="calcInput('8')">8</button>
-            <button class="calc-btn" onclick="calcInput('9')">9</button>
-            <button class="calc-btn op" onclick="calcInput('/')">÷</button>
-
-            <button class="calc-btn" onclick="calcInput('4')">4</button>
-            <button class="calc-btn" onclick="calcInput('5')">5</button>
-            <button class="calc-btn" onclick="calcInput('6')">6</button>
-            <button class="calc-btn op" onclick="calcInput('*')">×</button>
-
-            <button class="calc-btn" onclick="calcInput('1')">1</button>
-            <button class="calc-btn" onclick="calcInput('2')">2</button>
-            <button class="calc-btn" onclick="calcInput('3')">3</button>
-            <button class="calc-btn op" onclick="calcInput('-')">-</button>
-
-            <button class="calc-btn" onclick="calcInput('0')">0</button>
-            <button class="calc-btn" onclick="calcInput('.')">.</button>
-            <button class="calc-btn eq" onclick="calcInput('=')">=</button>
-            <button class="calc-btn op" onclick="calcInput('+')">+</button>
-        </div>
-    </div>
-
-    <div id="memo" class="tab-content">
-        <textarea class="memo-area" id="memoArea" placeholder="在這裡輸入記事內容... (自動儲存)"></textarea>
-        <button class="action-btn danger" onclick="clearMemo()">🧹 清空記事</button>
-    </div>
-</div>
-
 <script>
     // === 核心功能區塊 ===
 
@@ -377,7 +61,7 @@
         return 0;
     }
 
-    // 【修正點】更新欄位顯示邏輯：Mode 1 隱藏匯率欄位
+    // 更新欄位顯示邏輯
     function updatePricingFields() {
         const mode = parseInt(document.getElementById('modeSelector').value);
         
@@ -531,7 +215,7 @@
         setTimeout(() => btn.innerText = originalText, 1500);
     }
 
-    // === 3. 計算機邏輯 (無更動) ===
+    // === 3. 計算機邏輯 (修正了 eval 錯誤) ===
     let calcExpr = "";
     let calcLastRes = "";
 
@@ -552,7 +236,11 @@
                 if (calcLastRes && !/^[\d\.]/.test(calcExpr)) {
                    calcExpr = calcLastRes + calcExpr;
                 }
-                const result = eval(calcExpr);
+                
+                // 【已修正】將顯示用的 × 和 ÷ 轉換回程式碼可識別的 * 和 /
+                let exprToEvaluate = calcExpr.replace(/×/g, '*').replace(/÷/g, '/');
+                const result = eval(exprToEvaluate);
+                
                 calcLastRes = result.toString();
                 display.innerText = result;
                 exprDisplay.innerText = calcExpr + " =";
@@ -570,12 +258,13 @@
         }
     }
     
-    // 鍵盤支援 (無更動)
+    // 鍵盤支援 (維持不變，繼續將 * / 轉換為 × ÷ 供顯示)
     document.addEventListener('keydown', function(event) {
         if (!document.getElementById('calc').classList.contains('active')) return;
         
         const key = event.key;
         if (/[0-9\.\+\-\*\/\(\)]/.test(key)) {
+            // 注意：這裡將 * / 轉換為 × ÷ 是為了美觀顯示，計算時會再次轉換回去
             calcInput(key.replace('*','×').replace('/','÷'));
         } else if (key === 'Enter') {
             calcInput('=');
@@ -610,6 +299,3 @@
         window.open(window.location.href, "ToolsPopup", "menubar=no,toolbar=no,location=no,status=no");
     }
 </script>
-
-</body>
-</html>
