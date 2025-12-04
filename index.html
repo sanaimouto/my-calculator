@@ -406,7 +406,7 @@
         if (savedRate) document.getElementById('rateInput').value = savedRate;
     }
 
-    // 計算邏輯：Mode 1 已還原，Mode 2 維持動態匯率
+    // 計算邏輯
     function calculatePrice() {
         const mode = parseInt(document.getElementById('modeSelector').value);
         const jpy = evalExpr(document.getElementById('jpyInput').value);
@@ -531,7 +531,7 @@
         setTimeout(() => btn.innerText = originalText, 1500);
     }
 
-    // === 3. 計算機邏輯 (修正了 eval 錯誤) ===
+    // === 3. 計算機邏輯 (修正為由左到右順序計算) ===
     let calcExpr = "";
     let calcLastRes = "";
 
@@ -553,16 +553,69 @@
                    calcExpr = calcLastRes + calcExpr;
                 }
                 
-                // 將顯示用的 × 和 ÷ 轉換回程式碼可識別的 * 和 /
-                let exprToEvaluate = calcExpr.replace(/×/g, '*').replace(/÷/g, '/');
-                const result = eval(exprToEvaluate);
+                // 1. 轉換符號以利解析
+                let sanitizedExpr = calcExpr.replace(/×/g, '*').replace(/÷/g, '/');
                 
-                calcLastRes = result.toString();
-                display.innerText = result;
+                // 2. 分割數字和運算符
+                // 確保第一個是數字，否則會出錯
+                if (!sanitizedExpr || !/^[\d\(]/.test(sanitizedExpr)) {
+                    throw new Error('Invalid start');
+                }
+
+                // 提取運算符號 (Operators: +, -, *, /)
+                const operators = sanitizedExpr.match(/[\+\-\*\/]/g);
+                // 提取數字 (Operand)
+                const operands = sanitizedExpr.split(/[\+\-\*\/]/).map(Number); 
+
+                if (!operators || operands.length !== operators.length + 1) {
+                    // 基本檢查，確保數字和運算符數量正確
+                    if (operators && operands.length === operators.length) {
+                         // 如果是 100+ 這種結尾，最後一個數字會是空字串，轉為數字會是 0。
+                         // 這裡應該是使用者誤按，直接拋錯
+                         throw new Error('Incomplete expression');
+                    }
+                    if (sanitizedExpr.includes('(') || sanitizedExpr.includes(')')) {
+                         // 如果包含括號，簡單模式無法解析，拋錯
+                         throw new Error('Brackets not supported in simple mode');
+                    }
+                    
+                    // 重新使用 eval 嘗試處理，因為可能包含雙負號或特殊格式
+                    let fallbackResult = eval(sanitizedExpr);
+                    if (isNaN(fallbackResult) || !isFinite(fallbackResult)) throw new Error('Fallback eval failed');
+                    var result = fallbackResult;
+
+                } else {
+                    // 3. 依序執行計算 (左到右)
+                    var result = operands[0];
+                    for (let i = 0; i < operators.length; i++) {
+                        const operator = operators[i];
+                        const nextOperand = operands[i + 1];
+
+                        if (operator === '+') {
+                            result += nextOperand;
+                        } else if (operator === '-') {
+                            result -= nextOperand;
+                        } else if (operator === '*') {
+                            result *= nextOperand;
+                        } else if (operator === '/') {
+                            // 避免除以零
+                            if (nextOperand === 0) throw new Error('Division by zero');
+                            result /= nextOperand;
+                        }
+                    }
+                }
+                
+                // 四捨五入到小數點兩位 (或根據需要調整精度)
+                const finalResult = Math.round(result * 100) / 100;
+
+                calcLastRes = finalResult.toString();
+                display.innerText = finalResult;
                 exprDisplay.innerText = calcExpr + " =";
                 calcExpr = "";
-            } catch {
+                
+            } catch (error) {
                 display.innerText = "Error";
+                exprDisplay.innerText = calcExpr + " =";
                 calcExpr = "";
             }
         } else {
