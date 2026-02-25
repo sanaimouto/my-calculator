@@ -6,7 +6,6 @@
     <title>四葉亭上架工具箱</title>
     <link rel="shortcut icon" href="icon.ico" type="image/x-icon">
     <style>
-        /* 保留最初設計的樣式 */
         :root {
             --primary-color: #2c3e50;
             --accent-color: #3498db;
@@ -36,7 +35,6 @@
             flex-direction: column;
         }
 
-        /* 頂部功能列 */
         .header-bar {
             padding: 10px;
             background: #eef2f5;
@@ -56,7 +54,6 @@
         }
         .btn-pop:hover { background: #7f8c8d; }
 
-        /* 分頁導航 */
         .tabs {
             display: flex;
             background-color: var(--primary-color);
@@ -85,7 +82,6 @@
             background-color: rgba(255,255,255,0.05);
         }
 
-        /* 通用表單元素 */
         .tab-content {
             padding: 20px;
             display: none;
@@ -133,7 +129,6 @@
         button.danger:hover { background-color: #c0392b; }
         button:disabled { background-color: #bdc3c7; cursor: not-allowed; }
 
-        /* 結果顯示區 */
         .result-box {
             background: #f8f9fa;
             padding: 15px;
@@ -145,7 +140,6 @@
             color: #2c3e50;
         }
 
-        /* 歷史紀錄列表 */
         .history-list {
             list-style: none;
             padding: 0;
@@ -164,7 +158,6 @@
         }
         .history-list li:first-child { background-color: #eaf2f8; }
 
-        /* 計算機樣式 */
         .calc-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -195,14 +188,12 @@
         .calc-btn.op { background: #ecf0f1; color: var(--primary-color); }
         .calc-btn.eq { background: var(--accent-color); color: white; }
 
-        /* 記事本 */
         .memo-area {
             flex: 1;
             margin-bottom: 10px;
             font-family: monospace;
             line-height: 1.5;
         }
-        
     </style>
 </head>
 <body>
@@ -301,6 +292,8 @@
                 <option value="melon">🍈 Melonbooks</option>
                 <option value="surugaya">📦 駿河屋 (Suruga-ya)</option>
                 <option value="booth">🎨 BOOTH</option>
+                <option value="yahoo">🔨 日本 Yahoo 拍賣</option>
+                <option value="mercari">🛍️ Mercari</option>
             </select>
         </div>
         <div class="form-group">
@@ -336,15 +329,11 @@
 </div>
 
 <script>
-    // === 核心功能區塊 ===
-
-    // 當 DOM 內容加載完成時，執行初始化
     document.addEventListener('DOMContentLoaded', () => {
         loadRate();
         updatePricingFields();
         setupEnterKeyBindings();
 
-        // 幫商城捷徑加上 Enter 鍵監聽
         const shopInput = document.getElementById('shopInput');
         if (shopInput) {
             shopInput.addEventListener('keydown', (event) => {
@@ -356,18 +345,16 @@
         }
     });
 
-    // === Tab 切換邏輯 (順序更新) ===
     function switchTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         
         document.getElementById(tabId).classList.add('active');
-        // 陣列對應上方的按鈕順序
         const index = ['pricing', 'calc', 'memo', 'shop', 'link'].indexOf(tabId);
         document.querySelectorAll('.tab-btn')[index].classList.add('active');
     }
 
-    // === 1. 定價計算器邏輯 ===
+    // === 1. 定價計算器 ===
     function setupEnterKeyBindings() {
         const inputs = ['jpyInput', 'jpShipInput', 'rateInput', 'shipInput'];
         inputs.forEach(id => {
@@ -398,23 +385,16 @@
         if (!expr) return 0;
         expr = expr.replace(/×/g, '*').replace(/÷/g, '/');
         if (/^[\d\.\+\-\*/\(\)\s]+$/.test(expr)) {
-            try {
-                return Function('"use strict";return (' + expr + ')')();
-            } catch (e) {
-                return 0;
-            }
+            try { return Function('"use strict";return (' + expr + ')')(); } catch (e) { return 0; }
         }
         return 0;
     }
 
     function updatePricingFields() {
         const mode = parseInt(document.getElementById('modeSelector').value);
-        
         document.getElementById('jpShipGroup').style.display = (mode === 0) ? 'block' : 'none';
-        
         const showRate = (mode === 0 || mode === 2 || mode === 3);
         document.getElementById('rateGroup').style.display = showRate ? 'block' : 'none';
-        
         const showShip = (mode === 0 || mode === 3);
         document.getElementById('shipGroup').style.display = showShip ? 'block' : 'none';
 
@@ -447,33 +427,16 @@
             rateDisplay = `@匯率${rate}`;
         } else if (mode === 1) {
             let base = 0;
-            if (jpy >= 1 && jpy <= 3999) {
-                base = jpy * 1.05 * 0.27 + 50; 
-                base += (base <= 1000) ? 50 : 100;
-            } else if (jpy >= 4000 && jpy <= 7999) {
-                base = jpy * 1.05 * 0.26 + 50;
-                base += (base <= 1999) ? 100 : 200;
-            } else if (jpy >= 8000 && jpy <= 11999) {
-                base = jpy * 1.05 * 0.25 + 50;
-                base += (base <= 2999) ? 200 : 300;
-            } else {
-                base = jpy * 1.05 * 0.245 + 50;
-                if (base <= 3999) base += 300;
-                else if (base <= 4999) base += 400;
-                else if (base <= 5999) base += 500;
-                else if (base <= 6999) base += 600;
-                else base += 700;
-            }
+            if (jpy >= 1 && jpy <= 3999) { base = jpy * 1.05 * 0.27 + 50; base += (base <= 1000) ? 50 : 100; }
+            else if (jpy >= 4000 && jpy <= 7999) { base = jpy * 1.05 * 0.26 + 50; base += (base <= 1999) ? 100 : 200; }
+            else if (jpy >= 8000 && jpy <= 11999) { base = jpy * 1.05 * 0.25 + 50; base += (base <= 2999) ? 200 : 300; }
+            else { base = jpy * 1.05 * 0.245 + 50; if (base <= 3999) base += 300; else if (base <= 4999) base += 400; else if (base <= 5999) base += 500; else if (base <= 6999) base += 600; else base += 700; }
             result = base / 0.95;
             rateDisplay = `[固定係數]`;
         } else if (mode === 2) {
             localStorage.setItem('tool_last_rate', rate);
             let base = jpy * 1.05 * rate; 
-            if (base <= 1000) base += 50;
-            else if (base <= 1999) base += 100;
-            else if (base <= 2999) base += 200;
-            else if (base <= 3999) base += 300;
-            else base += 400;
+            if (base <= 1000) base += 50; else if (base <= 1999) base += 100; else if (base <= 2999) base += 200; else if (base <= 3999) base += 300; else base += 400;
             result = base / 0.95;
             rateDisplay = `@係數${rate}`;
         } else if (mode === 3) {
@@ -499,11 +462,9 @@
         document.getElementById('priceResult').innerText = '建議售價：';
     }
 
-    function clearHistory() {
-        document.getElementById('pricingHistory').innerHTML = '';
-    }
+    function clearHistory() { document.getElementById('pricingHistory').innerHTML = ''; }
 
-    // === 2. 計算機邏輯 ===
+    // === 2. 計算機 ===
     let calcExpr = "";
     let calcLastRes = "";
 
@@ -512,115 +473,61 @@
         const exprDisplay = document.getElementById('calcExpr');
 
         if (key === 'AC') {
-            calcExpr = "";
-            calcLastRes = "";
-            display.innerText = "0";
-            exprDisplay.innerText = "";
+            calcExpr = ""; calcLastRes = ""; display.innerText = "0"; exprDisplay.innerText = "";
         } else if (key === 'DEL') {
-            calcExpr = calcExpr.slice(0, -1);
-            display.innerText = calcExpr || "0";
+            calcExpr = calcExpr.slice(0, -1); display.innerText = calcExpr || "0";
         } else if (key === '=') {
             try {
-                if (calcLastRes && !/^[\d\.]/.test(calcExpr)) {
-                   calcExpr = calcLastRes + calcExpr;
-                }
-                
+                if (calcLastRes && !/^[\d\.]/.test(calcExpr)) calcExpr = calcLastRes + calcExpr;
                 let sanitizedExpr = calcExpr.replace(/×/g, '*').replace(/÷/g, '/');
-                
-                if (!sanitizedExpr || !/^[\d\(]/.test(sanitizedExpr)) {
-                    throw new Error('Invalid start');
-                }
+                if (!sanitizedExpr || !/^[\d\(]/.test(sanitizedExpr)) throw new Error('Invalid start');
 
                 const operators = sanitizedExpr.match(/[\+\-\*\/]/g);
                 const operands = sanitizedExpr.split(/[\+\-\*\/]/).map(Number); 
 
                 if (!operators || operands.length !== operators.length + 1) {
-                    if (operators && operands.length === operators.length) {
-                         throw new Error('Incomplete expression');
-                    }
-                    if (sanitizedExpr.includes('(') || sanitizedExpr.includes(')')) {
-                         throw new Error('Brackets not supported in simple mode');
-                    }
-                    
+                    if (operators && operands.length === operators.length) throw new Error('Incomplete expression');
+                    if (sanitizedExpr.includes('(') || sanitizedExpr.includes(')')) throw new Error('Brackets not supported in simple mode');
                     let fallbackResult = eval(sanitizedExpr);
                     if (isNaN(fallbackResult) || !isFinite(fallbackResult)) throw new Error('Fallback eval failed');
                     var result = fallbackResult;
-
                 } else {
                     var result = operands[0];
                     for (let i = 0; i < operators.length; i++) {
-                        const operator = operators[i];
-                        const nextOperand = operands[i + 1];
-
-                        if (operator === '+') {
-                            result += nextOperand;
-                        } else if (operator === '-') {
-                            result -= nextOperand;
-                        } else if (operator === '*') {
-                            result *= nextOperand;
-                        } else if (operator === '/') {
-                            if (nextOperand === 0) throw new Error('Division by zero');
-                            result /= nextOperand;
-                        }
+                        const operator = operators[i]; const nextOperand = operands[i + 1];
+                        if (operator === '+') result += nextOperand;
+                        else if (operator === '-') result -= nextOperand;
+                        else if (operator === '*') result *= nextOperand;
+                        else if (operator === '/') { if (nextOperand === 0) throw new Error('Division by zero'); result /= nextOperand; }
                     }
                 }
                 
                 const finalResult = Math.round(result * 100) / 100;
-
                 calcLastRes = finalResult.toString();
-                display.innerText = finalResult;
-                exprDisplay.innerText = calcExpr + " =";
-                calcExpr = "";
-                
-            } catch (error) {
-                display.innerText = "Error";
-                exprDisplay.innerText = calcExpr + " =";
-                calcExpr = "";
-            }
+                display.innerText = finalResult; exprDisplay.innerText = calcExpr + " ="; calcExpr = "";
+            } catch (error) { display.innerText = "Error"; exprDisplay.innerText = calcExpr + " ="; calcExpr = ""; }
         } else {
-            if (['+','-','*','/'].includes(key) && calcExpr === "" && calcLastRes !== "") {
-                calcExpr = calcLastRes;
-            }
-            calcExpr += key;
-            display.innerText = calcExpr;
+            if (['+','-','*','/'].includes(key) && calcExpr === "" && calcLastRes !== "") calcExpr = calcLastRes;
+            calcExpr += key; display.innerText = calcExpr;
         }
     }
     
     document.addEventListener('keydown', function(event) {
         if (!document.getElementById('calc').classList.contains('active')) return;
-        
         const key = event.key;
-        if (/[0-9\.\+\-\*\/\(\)]/.test(key)) {
-            calcInput(key.replace('*','×').replace('/','÷'));
-        } else if (key === 'Enter') {
-            calcInput('=');
-            event.preventDefault();
-        } else if (key === 'Backspace') {
-            calcInput('DEL');
-        } else if (key === 'Escape') {
-            calcInput('AC');
-        }
+        if (/[0-9\.\+\-\*\/\(\)]/.test(key)) calcInput(key.replace('*','×').replace('/','÷'));
+        else if (key === 'Enter') { calcInput('='); event.preventDefault(); }
+        else if (key === 'Backspace') calcInput('DEL');
+        else if (key === 'Escape') calcInput('AC');
     });
 
-    // === 3. 記事本邏輯 ===
+    // === 3. 記事本 ===
     const memoArea = document.getElementById('memoArea');
-    
-    if (localStorage.getItem('tool_memo')) {
-        memoArea.value = localStorage.getItem('tool_memo');
-    }
+    if (localStorage.getItem('tool_memo')) memoArea.value = localStorage.getItem('tool_memo');
+    memoArea.addEventListener('input', function() { localStorage.setItem('tool_memo', this.value); });
+    function clearMemo() { if(confirm('確定要清空記事嗎？')) { memoArea.value = ''; localStorage.removeItem('tool_memo'); } }
 
-    memoArea.addEventListener('input', function() {
-        localStorage.setItem('tool_memo', this.value);
-    });
-
-    function clearMemo() {
-        if(confirm('確定要清空記事嗎？')) {
-            memoArea.value = '';
-            localStorage.removeItem('tool_memo');
-        }
-    }
-
-    // === 4. 商城捷徑邏輯 (Melon, Surugaya, BOOTH) ===
+    // === 4. 商城捷徑 ===
     function openShop() {
         const shop = document.getElementById('shopSelector').value;
         const input = document.getElementById('shopInput').value.trim();
@@ -632,6 +539,7 @@
 
         let finalId = "";
         
+        // 自動擷取 ID 邏輯
         if (shop === 'melon') {
             const match = input.match(/product_id=(\d+)/);
             finalId = match ? match[1] : input.replace(/\D/g, '');
@@ -641,20 +549,25 @@
         } else if (shop === 'booth') {
             const match = input.match(/items\/(\d+)/);
             finalId = match ? match[1] : input.replace(/\D/g, '');
+        } else if (shop === 'yahoo') {
+            const match = input.match(/auction\/([a-zA-Z0-9_-]+)/);
+            finalId = match ? match[1] : input.replace(/[^a-zA-Z0-9_-]/g, '');
+        } else if (shop === 'mercari') {
+            const match = input.match(/item\/([a-zA-Z0-9_-]+)/);
+            finalId = match ? match[1] : input.replace(/[^a-zA-Z0-9_-]/g, '');
         }
 
+        // 組合網址並跳轉
         if (finalId) {
             let url = "";
-            if (shop === 'melon') {
-                url = `https://www.melonbooks.co.jp/detail/detail.php?product_id=${finalId}`;
-            } else if (shop === 'surugaya') {
-                url = `https://www.suruga-ya.jp/product/detail/${finalId}`;
-            } else if (shop === 'booth') {
-                url = `https://booth.pm/zh-tw/items/${finalId}`;
-            }
+            if (shop === 'melon') url = `https://www.melonbooks.co.jp/detail/detail.php?product_id=${finalId}`;
+            else if (shop === 'surugaya') url = `https://www.suruga-ya.jp/product/detail/${finalId}`;
+            else if (shop === 'booth') url = `https://booth.pm/zh-tw/items/${finalId}`;
+            else if (shop === 'yahoo') url = `https://auctions.yahoo.co.jp/jp/auction/${finalId}`;
+            else if (shop === 'mercari') url = `https://jp.mercari.com/item/${finalId}`;
 
             window.open(url, '_blank');
-            document.getElementById('shopInput').value = ''; // 清空輸入框
+            document.getElementById('shopInput').value = '';
         } else {
             alert('無法辨識商品編號，請確認後重新輸入！');
         }
@@ -665,36 +578,28 @@
             const text = await navigator.clipboard.readText();
             document.getElementById('shopInput').value = text;
             openShop(); 
-        } catch (err) {
-            alert('無法讀取剪貼簿，請手動貼上');
-        }
+        } catch (err) { alert('無法讀取剪貼簿，請手動貼上'); }
     }
 
-    // === 5. 外連轉換器邏輯 ===
+    // === 5. 外連轉換 ===
     async function pasteFromClipboard() {
         try {
             const text = await navigator.clipboard.readText();
             document.getElementById('linkInput').value = text;
             convertLink();
-        } catch (err) {
-            alert('無法讀取剪貼簿，請手動貼上');
-        }
+        } catch (err) { alert('無法讀取剪貼簿，請手動貼上'); }
     }
 
     function convertLink() {
         const raw = document.getElementById('linkInput').value.trim();
         let fileId = "";
-        
         if (raw.includes("drive.google.com")) {
             const match1 = raw.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
             const match2 = raw.match(/id=([a-zA-Z0-9_-]+)/);
-            if (match1) fileId = match1[1];
-            else if (match2) fileId = match2[1];
+            if (match1) fileId = match1[1]; else if (match2) fileId = match2[1];
         }
-
         const output = document.getElementById('linkOutput');
         const copyBtn = document.getElementById('copyLinkBtn');
-
         if (fileId) {
             output.value = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1366`;
             copyBtn.disabled = false;
@@ -706,8 +611,7 @@
 
     function copyLink() {
         const copyText = document.getElementById("linkOutput");
-        copyText.select();
-        copyText.setSelectionRange(0, 99999); 
+        copyText.select(); copyText.setSelectionRange(0, 99999); 
         navigator.clipboard.writeText(copyText.value);
         const btn = document.getElementById('copyLinkBtn');
         const originalText = btn.innerText;
@@ -715,12 +619,8 @@
         setTimeout(() => btn.innerText = originalText, 1500);
     }
 
-    // === 6. 獨立視窗邏輯 ===
-    function openPopup() {
-        window.open(window.location.href, "ToolsPopup", "menubar=no,toolbar=no,location=no,status=no");
-    }
+    function openPopup() { window.open(window.location.href, "ToolsPopup", "menubar=no,toolbar=no,location=no,status=no"); }
 </script>
 
 </body>
 </html>
-
