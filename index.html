@@ -214,9 +214,10 @@
 
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('pricing')">📊 定價計算</button>
-        <button class="tab-btn" onclick="switchTab('link')">🔗 外連轉換</button>
         <button class="tab-btn" onclick="switchTab('calc')">📟 計算機</button>
         <button class="tab-btn" onclick="switchTab('memo')">📝 記事本</button>
+        <button class="tab-btn" onclick="switchTab('shop')">🛒 商城捷徑</button>
+        <button class="tab-btn" onclick="switchTab('link')">🔗 外連轉換</button>
     </div>
 
     <div id="pricing" class="tab-content active">
@@ -253,26 +254,6 @@
             <button class="action-btn secondary" onclick="clearPricingInputs()">🧹 清除輸入</button>
             <button class="action-btn danger" onclick="clearHistory()">🗑️ 清空紀錄</button>
         </div>
-    </div>
-
-    <div id="link" class="tab-content">
-        <div class="form-group">
-            <label>Google 圖片分享連結：</label>
-            <div style="display: flex; gap: 5px;">
-                <input type="text" id="linkInput" placeholder="貼上連結...">
-                <button class="action-btn secondary" style="width: 80px; margin:0;" onclick="pasteFromClipboard()">貼上</button>
-            </div>
-        </div>
-        <div style="display: flex; gap: 10px;">
-            <button class="action-btn" onclick="convertLink()">轉換</button>
-            <button class="action-btn secondary" id="copyLinkBtn" onclick="copyLink()" disabled>📋 複製</button>
-        </div>
-        
-        <div class="form-group" style="margin-top: 15px;">
-            <label>轉換結果：</label>
-            <textarea id="linkOutput" rows="4" readonly></textarea>
-        </div>
-        <button class="action-btn secondary" onclick="document.getElementById('linkInput').value=''; document.getElementById('linkOutput').value='';">🧹 清除</button>
     </div>
 
     <div id="calc" class="tab-content">
@@ -312,6 +293,46 @@
         <textarea class="memo-area" id="memoArea" placeholder="在這裡輸入記事內容... (自動儲存)"></textarea>
         <button class="action-btn danger" onclick="clearMemo()">🧹 清空記事</button>
     </div>
+
+    <div id="shop" class="tab-content">
+        <div class="form-group">
+            <label>選擇商城：</label>
+            <select id="shopSelector">
+                <option value="melon">🍈 Melonbooks</option>
+                <option value="surugaya">📦 駿河屋 (Suruga-ya)</option>
+                <option value="booth">🎨 BOOTH</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>商品編號 (或完整網址)：</label>
+            <div style="display: flex; gap: 5px;">
+                <input type="text" id="shopInput" placeholder="輸入編號或直接貼上網址">
+                <button class="action-btn secondary" style="width: 80px; margin:0;" onclick="pasteToShopInput()">貼上</button>
+            </div>
+        </div>
+        <button class="action-btn" onclick="openShop()">🚀 開啟商品頁面</button>
+    </div>
+
+    <div id="link" class="tab-content">
+        <div class="form-group">
+            <label>Google 圖片分享連結：</label>
+            <div style="display: flex; gap: 5px;">
+                <input type="text" id="linkInput" placeholder="貼上連結...">
+                <button class="action-btn secondary" style="width: 80px; margin:0;" onclick="pasteFromClipboard()">貼上</button>
+            </div>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="action-btn" onclick="convertLink()">轉換</button>
+            <button class="action-btn secondary" id="copyLinkBtn" onclick="copyLink()" disabled>📋 複製</button>
+        </div>
+        
+        <div class="form-group" style="margin-top: 15px;">
+            <label>轉換結果：</label>
+            <textarea id="linkOutput" rows="4" readonly></textarea>
+        </div>
+        <button class="action-btn secondary" onclick="document.getElementById('linkInput').value=''; document.getElementById('linkOutput').value='';">🧹 清除</button>
+    </div>
+
 </div>
 
 <script>
@@ -322,21 +343,31 @@
         loadRate();
         updatePricingFields();
         setupEnterKeyBindings();
+
+        // 幫商城捷徑加上 Enter 鍵監聽
+        const shopInput = document.getElementById('shopInput');
+        if (shopInput) {
+            shopInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    openShop();
+                }
+            });
+        }
     });
 
-    // === Tab 切換邏輯 (無更動) ===
+    // === Tab 切換邏輯 (順序更新) ===
     function switchTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         
         document.getElementById(tabId).classList.add('active');
-        const index = ['pricing', 'link', 'calc', 'memo'].indexOf(tabId);
+        // 陣列對應上方的按鈕順序
+        const index = ['pricing', 'calc', 'memo', 'shop', 'link'].indexOf(tabId);
         document.querySelectorAll('.tab-btn')[index].classList.add('active');
     }
 
     // === 1. 定價計算器邏輯 ===
-    
-    // 設置 Enter 鍵綁定 (無更動)
     function setupEnterKeyBindings() {
         const inputs = ['jpyInput', 'jpShipInput', 'rateInput', 'shipInput'];
         inputs.forEach(id => {
@@ -363,7 +394,6 @@
         });
     }
 
-    // 安全的數學運算評估 (無更動)
     function evalExpr(expr) {
         if (!expr) return 0;
         expr = expr.replace(/×/g, '*').replace(/÷/g, '/');
@@ -377,22 +407,17 @@
         return 0;
     }
 
-    // 更新欄位顯示邏輯
     function updatePricingFields() {
         const mode = parseInt(document.getElementById('modeSelector').value);
         
-        // jpShipGroup (日本國內運費) 只有通販模式需要
         document.getElementById('jpShipGroup').style.display = (mode === 0) ? 'block' : 'none';
         
-        // rateGroup (匯率): 適用於 Mode 0, Mode 2, Mode 3。 Mode 1 隱藏。
         const showRate = (mode === 0 || mode === 2 || mode === 3);
         document.getElementById('rateGroup').style.display = showRate ? 'block' : 'none';
         
-        // shipGroup (國際運費) 只有通販和會場代購模式需要
         const showShip = (mode === 0 || mode === 3);
         document.getElementById('shipGroup').style.display = showShip ? 'block' : 'none';
 
-        // 調整 Rate 欄位的 Placeholder 提示 (只在顯示時才需要)
         const rateInput = document.getElementById('rateInput');
         if (mode === 2) { 
             rateInput.placeholder = "請輸入含利潤的匯率/係數 (e.g., 0.23)";
@@ -406,7 +431,6 @@
         if (savedRate) document.getElementById('rateInput').value = savedRate;
     }
 
-    // 計算邏輯
     function calculatePrice() {
         const mode = parseInt(document.getElementById('modeSelector').value);
         const jpy = evalExpr(document.getElementById('jpyInput').value);
@@ -417,11 +441,11 @@
         let result = 0;
         let rateDisplay = ''; 
 
-        if (mode === 0) { // 通販
+        if (mode === 0) {
             localStorage.setItem('tool_last_rate', rate);
             result = ((jpy + jpShip) * rate + ship) / 0.8;
             rateDisplay = `@匯率${rate}`;
-        } else if (mode === 1) { // 中堅CD - 已還原為固定公式
+        } else if (mode === 1) {
             let base = 0;
             if (jpy >= 1 && jpy <= 3999) {
                 base = jpy * 1.05 * 0.27 + 50; 
@@ -442,23 +466,17 @@
             }
             result = base / 0.95;
             rateDisplay = `[固定係數]`;
-        } else if (mode === 2) { // 中堅船版書籍 - 維持動態匯率
+        } else if (mode === 2) {
             localStorage.setItem('tool_last_rate', rate);
-            
-            // 實作使用者確認的公式：商品本體 * 1.05 * 自填匯率/係數
             let base = jpy * 1.05 * rate; 
-            
-            // 加入固定費用/利潤
             if (base <= 1000) base += 50;
             else if (base <= 1999) base += 100;
             else if (base <= 2999) base += 200;
             else if (base <= 3999) base += 300;
             else base += 400;
-            
-            // 最後除以 0.95 (賣場 5% 手續費)
             result = base / 0.95;
             rateDisplay = `@係數${rate}`;
-        } else if (mode === 3) { // 會場代購
+        } else if (mode === 3) {
             localStorage.setItem('tool_last_rate', rate);
             result = (jpy * 1.15 * rate + ship) / 0.8;
             rateDisplay = `@匯率${rate}`;
@@ -467,7 +485,6 @@
         const final = result.toFixed(2);
         document.getElementById('priceResult').innerText = `建議售價：NT$ ${final}`;
         
-        // Add to history
         const modeName = document.getElementById('modeSelector').options[mode].text;
         const historyItem = document.createElement('li');
         historyItem.innerText = `[${modeName}] 售價：${document.getElementById('jpyInput').value} ${rateDisplay} → NT$${final}`;
@@ -486,7 +503,174 @@
         document.getElementById('pricingHistory').innerHTML = '';
     }
 
-    // === 2. 外連轉換器邏輯 (無更動) ===
+    // === 2. 計算機邏輯 ===
+    let calcExpr = "";
+    let calcLastRes = "";
+
+    function calcInput(key) {
+        const display = document.getElementById('calcResult');
+        const exprDisplay = document.getElementById('calcExpr');
+
+        if (key === 'AC') {
+            calcExpr = "";
+            calcLastRes = "";
+            display.innerText = "0";
+            exprDisplay.innerText = "";
+        } else if (key === 'DEL') {
+            calcExpr = calcExpr.slice(0, -1);
+            display.innerText = calcExpr || "0";
+        } else if (key === '=') {
+            try {
+                if (calcLastRes && !/^[\d\.]/.test(calcExpr)) {
+                   calcExpr = calcLastRes + calcExpr;
+                }
+                
+                let sanitizedExpr = calcExpr.replace(/×/g, '*').replace(/÷/g, '/');
+                
+                if (!sanitizedExpr || !/^[\d\(]/.test(sanitizedExpr)) {
+                    throw new Error('Invalid start');
+                }
+
+                const operators = sanitizedExpr.match(/[\+\-\*\/]/g);
+                const operands = sanitizedExpr.split(/[\+\-\*\/]/).map(Number); 
+
+                if (!operators || operands.length !== operators.length + 1) {
+                    if (operators && operands.length === operators.length) {
+                         throw new Error('Incomplete expression');
+                    }
+                    if (sanitizedExpr.includes('(') || sanitizedExpr.includes(')')) {
+                         throw new Error('Brackets not supported in simple mode');
+                    }
+                    
+                    let fallbackResult = eval(sanitizedExpr);
+                    if (isNaN(fallbackResult) || !isFinite(fallbackResult)) throw new Error('Fallback eval failed');
+                    var result = fallbackResult;
+
+                } else {
+                    var result = operands[0];
+                    for (let i = 0; i < operators.length; i++) {
+                        const operator = operators[i];
+                        const nextOperand = operands[i + 1];
+
+                        if (operator === '+') {
+                            result += nextOperand;
+                        } else if (operator === '-') {
+                            result -= nextOperand;
+                        } else if (operator === '*') {
+                            result *= nextOperand;
+                        } else if (operator === '/') {
+                            if (nextOperand === 0) throw new Error('Division by zero');
+                            result /= nextOperand;
+                        }
+                    }
+                }
+                
+                const finalResult = Math.round(result * 100) / 100;
+
+                calcLastRes = finalResult.toString();
+                display.innerText = finalResult;
+                exprDisplay.innerText = calcExpr + " =";
+                calcExpr = "";
+                
+            } catch (error) {
+                display.innerText = "Error";
+                exprDisplay.innerText = calcExpr + " =";
+                calcExpr = "";
+            }
+        } else {
+            if (['+','-','*','/'].includes(key) && calcExpr === "" && calcLastRes !== "") {
+                calcExpr = calcLastRes;
+            }
+            calcExpr += key;
+            display.innerText = calcExpr;
+        }
+    }
+    
+    document.addEventListener('keydown', function(event) {
+        if (!document.getElementById('calc').classList.contains('active')) return;
+        
+        const key = event.key;
+        if (/[0-9\.\+\-\*\/\(\)]/.test(key)) {
+            calcInput(key.replace('*','×').replace('/','÷'));
+        } else if (key === 'Enter') {
+            calcInput('=');
+            event.preventDefault();
+        } else if (key === 'Backspace') {
+            calcInput('DEL');
+        } else if (key === 'Escape') {
+            calcInput('AC');
+        }
+    });
+
+    // === 3. 記事本邏輯 ===
+    const memoArea = document.getElementById('memoArea');
+    
+    if (localStorage.getItem('tool_memo')) {
+        memoArea.value = localStorage.getItem('tool_memo');
+    }
+
+    memoArea.addEventListener('input', function() {
+        localStorage.setItem('tool_memo', this.value);
+    });
+
+    function clearMemo() {
+        if(confirm('確定要清空記事嗎？')) {
+            memoArea.value = '';
+            localStorage.removeItem('tool_memo');
+        }
+    }
+
+    // === 4. 商城捷徑邏輯 (Melon, Surugaya, BOOTH) ===
+    function openShop() {
+        const shop = document.getElementById('shopSelector').value;
+        const input = document.getElementById('shopInput').value.trim();
+        
+        if (!input) {
+            alert('請先輸入商品編號或網址！');
+            return;
+        }
+
+        let finalId = "";
+        
+        if (shop === 'melon') {
+            const match = input.match(/product_id=(\d+)/);
+            finalId = match ? match[1] : input.replace(/\D/g, '');
+        } else if (shop === 'surugaya') {
+            const match = input.match(/detail\/([a-zA-Z0-9_-]+)/);
+            finalId = match ? match[1] : input.replace(/[^a-zA-Z0-9_-]/g, '');
+        } else if (shop === 'booth') {
+            const match = input.match(/items\/(\d+)/);
+            finalId = match ? match[1] : input.replace(/\D/g, '');
+        }
+
+        if (finalId) {
+            let url = "";
+            if (shop === 'melon') {
+                url = `https://www.melonbooks.co.jp/detail/detail.php?product_id=${finalId}`;
+            } else if (shop === 'surugaya') {
+                url = `https://www.suruga-ya.jp/product/detail/${finalId}`;
+            } else if (shop === 'booth') {
+                url = `https://booth.pm/zh-tw/items/${finalId}`;
+            }
+
+            window.open(url, '_blank');
+            document.getElementById('shopInput').value = ''; // 清空輸入框
+        } else {
+            alert('無法辨識商品編號，請確認後重新輸入！');
+        }
+    }
+
+    async function pasteToShopInput() {
+        try {
+            const text = await navigator.clipboard.readText();
+            document.getElementById('shopInput').value = text;
+            openShop(); 
+        } catch (err) {
+            alert('無法讀取剪貼簿，請手動貼上');
+        }
+    }
+
+    // === 5. 外連轉換器邏輯 ===
     async function pasteFromClipboard() {
         try {
             const text = await navigator.clipboard.readText();
@@ -531,139 +715,7 @@
         setTimeout(() => btn.innerText = originalText, 1500);
     }
 
-    // === 3. 計算機邏輯 (修正為由左到右順序計算) ===
-    let calcExpr = "";
-    let calcLastRes = "";
-
-    function calcInput(key) {
-        const display = document.getElementById('calcResult');
-        const exprDisplay = document.getElementById('calcExpr');
-
-        if (key === 'AC') {
-            calcExpr = "";
-            calcLastRes = "";
-            display.innerText = "0";
-            exprDisplay.innerText = "";
-        } else if (key === 'DEL') {
-            calcExpr = calcExpr.slice(0, -1);
-            display.innerText = calcExpr || "0";
-        } else if (key === '=') {
-            try {
-                if (calcLastRes && !/^[\d\.]/.test(calcExpr)) {
-                   calcExpr = calcLastRes + calcExpr;
-                }
-                
-                // 1. 轉換符號以利解析
-                let sanitizedExpr = calcExpr.replace(/×/g, '*').replace(/÷/g, '/');
-                
-                // 2. 分割數字和運算符
-                // 確保第一個是數字，否則會出錯
-                if (!sanitizedExpr || !/^[\d\(]/.test(sanitizedExpr)) {
-                    throw new Error('Invalid start');
-                }
-
-                // 提取運算符號 (Operators: +, -, *, /)
-                const operators = sanitizedExpr.match(/[\+\-\*\/]/g);
-                // 提取數字 (Operand)
-                const operands = sanitizedExpr.split(/[\+\-\*\/]/).map(Number); 
-
-                if (!operators || operands.length !== operators.length + 1) {
-                    // 基本檢查，確保數字和運算符數量正確
-                    if (operators && operands.length === operators.length) {
-                         // 如果是 100+ 這種結尾，最後一個數字會是空字串，轉為數字會是 0。
-                         // 這裡應該是使用者誤按，直接拋錯
-                         throw new Error('Incomplete expression');
-                    }
-                    if (sanitizedExpr.includes('(') || sanitizedExpr.includes(')')) {
-                         // 如果包含括號，簡單模式無法解析，拋錯
-                         throw new Error('Brackets not supported in simple mode');
-                    }
-                    
-                    // 重新使用 eval 嘗試處理，因為可能包含雙負號或特殊格式
-                    let fallbackResult = eval(sanitizedExpr);
-                    if (isNaN(fallbackResult) || !isFinite(fallbackResult)) throw new Error('Fallback eval failed');
-                    var result = fallbackResult;
-
-                } else {
-                    // 3. 依序執行計算 (左到右)
-                    var result = operands[0];
-                    for (let i = 0; i < operators.length; i++) {
-                        const operator = operators[i];
-                        const nextOperand = operands[i + 1];
-
-                        if (operator === '+') {
-                            result += nextOperand;
-                        } else if (operator === '-') {
-                            result -= nextOperand;
-                        } else if (operator === '*') {
-                            result *= nextOperand;
-                        } else if (operator === '/') {
-                            // 避免除以零
-                            if (nextOperand === 0) throw new Error('Division by zero');
-                            result /= nextOperand;
-                        }
-                    }
-                }
-                
-                // 四捨五入到小數點兩位 (或根據需要調整精度)
-                const finalResult = Math.round(result * 100) / 100;
-
-                calcLastRes = finalResult.toString();
-                display.innerText = finalResult;
-                exprDisplay.innerText = calcExpr + " =";
-                calcExpr = "";
-                
-            } catch (error) {
-                display.innerText = "Error";
-                exprDisplay.innerText = calcExpr + " =";
-                calcExpr = "";
-            }
-        } else {
-            if (['+','-','*','/'].includes(key) && calcExpr === "" && calcLastRes !== "") {
-                calcExpr = calcLastRes;
-            }
-            calcExpr += key;
-            display.innerText = calcExpr;
-        }
-    }
-    
-    // 鍵盤支援 
-    document.addEventListener('keydown', function(event) {
-        if (!document.getElementById('calc').classList.contains('active')) return;
-        
-        const key = event.key;
-        if (/[0-9\.\+\-\*\/\(\)]/.test(key)) {
-            // 注意：這裡將 * / 轉換為 × ÷ 是為了美觀顯示
-            calcInput(key.replace('*','×').replace('/','÷'));
-        } else if (key === 'Enter') {
-            calcInput('=');
-            event.preventDefault();
-        } else if (key === 'Backspace') {
-            calcInput('DEL');
-        } else if (key === 'Escape') {
-            calcInput('AC');
-        }
-    });
-
-    // === 4. 記事本邏輯 (無更動) ===
-    const memoArea = document.getElementById('memoArea');
-    
-    if (localStorage.getItem('tool_memo')) {
-        memoArea.value = localStorage.getItem('tool_memo');
-    }
-
-    memoArea.addEventListener('input', function() {
-        localStorage.setItem('tool_memo', this.value);
-    });
-
-    function clearMemo() {
-        if(confirm('確定要清空記事嗎？')) {
-            memoArea.value = '';
-            localStorage.removeItem('tool_memo');
-        }
-    }
-
-    // === 5. 獨立視窗邏輯 (無更動) ===
+    // === 6. 獨立視窗邏輯 ===
     function openPopup() {
         window.open(window.location.href, "ToolsPopup", "menubar=no,toolbar=no,location=no,status=no");
     }
