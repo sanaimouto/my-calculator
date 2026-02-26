@@ -61,14 +61,16 @@
 
         .tab-btn {
             flex: 1;
-            padding: 15px;
+            padding: 12px 5px; 
             border: none;
             background: none;
             color: #bdc3c7;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 14px; 
+            font-weight: bold;
             transition: 0.3s;
             border-bottom: 3px solid transparent;
+            text-align: center;
         }
 
         .tab-btn:hover {
@@ -100,7 +102,7 @@
             font-weight: bold;
             color: #34495e;
         }
-        input[type="text"], select, textarea {
+        input[type="text"], input[type="date"], input[type="number"], select, textarea {
             width: 100%;
             padding: 10px;
             box-sizing: border-box;
@@ -194,6 +196,49 @@
             font-family: monospace;
             line-height: 1.5;
         }
+
+        .card-detail-text {
+            font-size: 14px;
+            color: #555;
+            margin-top: 10px;
+            line-height: 1.6;
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ffeeba;
+            white-space: pre-line;
+        }
+
+        .settings-box {
+            background: #fafafa;
+            padding: 15px;
+            border: 1px dashed #ccc;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .settings-box label {
+            font-size: 13px;
+            color: #7f8c8d;
+        }
+
+        /* 搜尋引擎按鈕專用網格：自動排版適應 */
+        .search-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 10px;
+        }
+        .search-btn {
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            text-align: center;
+        }
+        .search-btn:hover { opacity: 0.8; }
     </style>
 </head>
 <body>
@@ -204,11 +249,12 @@
     </div>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('pricing')">📊 定價計算</button>
+        <button class="tab-btn active" onclick="switchTab('pricing')">📊 定價</button>
+        <button class="tab-btn" onclick="switchTab('card')">💳 刷卡</button>
         <button class="tab-btn" onclick="switchTab('calc')">📟 計算機</button>
         <button class="tab-btn" onclick="switchTab('memo')">📝 記事本</button>
-        <button class="tab-btn" onclick="switchTab('shop')">🛒 商城捷徑</button>
-        <button class="tab-btn" onclick="switchTab('link')">🔗 外連轉換</button>
+        <button class="tab-btn" onclick="switchTab('shop')">🛒 商城</button>
+        <button class="tab-btn" onclick="switchTab('link')">🔗 外連</button>
     </div>
 
     <div id="pricing" class="tab-content active">
@@ -244,6 +290,50 @@
         <div style="margin-top: 10px; display: flex; gap: 10px;">
             <button class="action-btn secondary" onclick="clearPricingInputs()">🧹 清除輸入</button>
             <button class="action-btn danger" onclick="clearHistory()">🗑️ 清空紀錄</button>
+        </div>
+    </div>
+
+    <div id="card" class="tab-content">
+        <div class="settings-box">
+            <label style="margin-bottom: 10px; display: block; font-weight: bold; color: #2c3e50;">⚙️ 信用卡設定 (系統會自動記憶)</label>
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <div style="flex: 2;">
+                    <label>卡片 A 名稱</label>
+                    <input type="text" id="card1Name" placeholder="例如: 中國信託" value="中國信託" onchange="saveCardSettings(); recommendCard()">
+                </div>
+                <div style="flex: 1;">
+                    <label>A 出帳日</label>
+                    <input type="number" id="card1Date" min="1" max="31" placeholder="日" value="5" onchange="saveCardSettings(); recommendCard()">
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <div style="flex: 2;">
+                    <label>卡片 B 名稱</label>
+                    <input type="text" id="card2Name" placeholder="例如: 華南銀行" value="華南銀行" onchange="saveCardSettings(); recommendCard()">
+                </div>
+                <div style="flex: 1;">
+                    <label>B 出帳日</label>
+                    <input type="number" id="card2Date" min="1" max="31" placeholder="日" value="23" onchange="saveCardSettings(); recommendCard()">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>請款時機：</label>
+            <select id="chargeType" onchange="toggleDateLabel(); recommendCard()">
+                <option value="immediate">當下立刻請款 (現貨 / 訂購即扣款)</option>
+                <option value="release">發售前夕請款 (出貨前才扣款的預購品)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label id="dateLabel">選擇刷卡日期 (預設為今天)：</label>
+            <input type="date" id="swipeDate" onchange="recommendCard()">
+        </div>
+        <button class="action-btn" onclick="recommendCard()">💡 分析最佳刷卡卡片</button>
+        
+        <div class="result-box" id="cardResult">建議刷卡：請選擇日期</div>
+        <div class="card-detail-text" id="cardDetail">
+            分析結果將顯示在此處。
         </div>
     </div>
 
@@ -286,6 +376,8 @@
     </div>
 
     <div id="shop" class="tab-content">
+        
+        <h3 style="margin-top: 0; margin-bottom: 15px; color: #2c3e50; font-size: 16px; border-left: 4px solid var(--accent-color); padding-left: 8px;">📌 商品編號直達</h3>
         <div class="form-group">
             <label>選擇商城：</label>
             <select id="shopSelector">
@@ -304,6 +396,35 @@
             </div>
         </div>
         <button class="action-btn" onclick="openShop()">🚀 開啟商品頁面</button>
+
+        <hr style="margin: 25px 0; border: 0; border-top: 1px dashed #ccc;">
+
+        <h3 style="margin-top: 0; margin-bottom: 15px; color: #2c3e50; font-size: 16px; border-left: 4px solid #e67e22; padding-left: 8px;">🔍 跨平台關鍵字搜尋</h3>
+        <div class="form-group">
+            <label>輸入搜尋關鍵字：</label>
+            <div style="display: flex; gap: 5px;">
+                <input type="text" id="searchKeyword" placeholder="例如: 初音未來、Hololive...">
+                <button class="action-btn secondary" style="width: 80px; margin:0;" onclick="document.getElementById('searchKeyword').value=''">清除</button>
+            </div>
+        </div>
+        <div class="search-grid">
+            <button class="search-btn" style="background-color: #f39c12;" onclick="doSearch('amazon')">🛒 Amazon JP</button>
+            <button class="search-btn" style="background-color: #3498db;" onclick="doSearch('sofmap')">💻 Sofmap</button>
+            <button class="search-btn" style="background-color: #2ecc71;" onclick="doSearch('melon')">🍈 Melonbooks</button>
+            <button class="search-btn" style="background-color: #9b59b6;" onclick="doSearch('surugaya')">📦 駿河屋</button>
+            <button class="search-btn" style="background-color: #e74c3c;" onclick="doSearch('booth')">🎨 BOOTH</button>
+            <button class="search-btn" style="background-color: #f1c40f; color: #333;" onclick="doSearch('yahoo')">🔨 日本 Yahoo 拍賣</button>
+            <button class="search-btn" style="background-color: #e056fd;" onclick="doSearch('mercari')">🛍️ Mercari</button>
+            <button class="search-btn" style="background-color: #e67e22;" onclick="doSearch('amiami')">🌟 Amiami</button>
+            <button class="search-btn" style="background-color: #34495e;" onclick="doSearch('ebten')">📚 ebten</button>
+            <button class="search-btn" style="background-color: #2980b9;" onclick="doSearch('gamers')">🎮 Gamers</button>
+            <button class="search-btn" style="background-color: #16a085;" onclick="doSearch('trader_all')">💿 Trader(一般)</button>
+            <button class="search-btn" style="background-color: #c0392b;" onclick="doSearch('trader_18')">🔞 Trader(18禁)</button>
+            <button class="search-btn" style="background-color: #bf0000;" onclick="doSearch('rakuten')">📖 楽天ブックス</button>
+            <button class="search-btn" style="background-color: #2c3e50;" onclick="doSearch('wondergoo')">💿 WonderGOO</button>
+            <button class="search-btn" style="background-color: #004bbb;" onclick="doSearch('animate')">🅰️ アニメイト</button>
+            <button class="search-btn" style="background-color: #1abc9c;" onclick="doSearch('neowing')">💿 Neowing</button>
+        </div>
     </div>
 
     <div id="link" class="tab-content">
@@ -333,6 +454,9 @@
         loadRate();
         updatePricingFields();
         setupEnterKeyBindings();
+        
+        loadCardSettings(); 
+        initCardDate(); 
 
         const shopInput = document.getElementById('shopInput');
         if (shopInput) {
@@ -343,6 +467,18 @@
                 }
             });
         }
+        
+        // 關鍵字搜尋框支援 Enter 送出（預設以 Amazon 搜尋，或可自行調整）
+        const searchInput = document.getElementById('searchKeyword');
+        if (searchInput) {
+            searchInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    // 若想按 Enter 預設開啟某個平台，可取消下方註解並替換平台名稱
+                    // doSearch('amazon'); 
+                }
+            });
+        }
     });
 
     function switchTab(tabId) {
@@ -350,8 +486,107 @@
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         
         document.getElementById(tabId).classList.add('active');
-        const index = ['pricing', 'calc', 'memo', 'shop', 'link'].indexOf(tabId);
+        const index = ['pricing', 'card', 'calc', 'memo', 'shop', 'link'].indexOf(tabId);
         document.querySelectorAll('.tab-btn')[index].classList.add('active');
+    }
+
+    // === 動態刷卡建議邏輯 ===
+    function saveCardSettings() {
+        localStorage.setItem('tool_card1_name', document.getElementById('card1Name').value);
+        localStorage.setItem('tool_card1_date', document.getElementById('card1Date').value);
+        localStorage.setItem('tool_card2_name', document.getElementById('card2Name').value);
+        localStorage.setItem('tool_card2_date', document.getElementById('card2Date').value);
+    }
+
+    function loadCardSettings() {
+        if (localStorage.getItem('tool_card1_name')) document.getElementById('card1Name').value = localStorage.getItem('tool_card1_name');
+        if (localStorage.getItem('tool_card1_date')) document.getElementById('card1Date').value = localStorage.getItem('tool_card1_date');
+        if (localStorage.getItem('tool_card2_name')) document.getElementById('card2Name').value = localStorage.getItem('tool_card2_name');
+        if (localStorage.getItem('tool_card2_date')) document.getElementById('card2Date').value = localStorage.getItem('tool_card2_date');
+    }
+
+    function toggleDateLabel() {
+        const type = document.getElementById('chargeType').value;
+        const label = document.getElementById('dateLabel');
+        if (type === 'release') {
+            label.innerText = '輸入預計發售日 (系統將自動提前 3 天作預估請款日)：';
+        } else {
+            label.innerText = '選擇刷卡日期 (預設為今天)：';
+        }
+    }
+
+    function initCardDate() {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        document.getElementById('swipeDate').value = `${yyyy}-${mm}-${dd}`;
+        recommendCard();
+    }
+
+    function getNextBillDate(currentDate, billDayStr) {
+        let billDay = parseInt(billDayStr) || 1;
+        let y = currentDate.getFullYear();
+        let m = currentDate.getMonth();
+        let d = currentDate.getDate();
+
+        if (d >= billDay) {
+            m += 1;
+        }
+        return new Date(y, m, billDay);
+    }
+
+    function getDaysDiff(currentDate, targetDate) {
+        return Math.ceil((targetDate - currentDate) / (1000 * 60 * 60 * 24));
+    }
+
+    function recommendCard() {
+        const dateStr = document.getElementById('swipeDate').value;
+        if (!dateStr) return;
+        
+        const type = document.getElementById('chargeType').value;
+        let targetObj = new Date(dateStr);
+        let reasonPrefix = "";
+
+        if (type === 'release') {
+            targetObj.setDate(targetObj.getDate() - 3);
+            const estY = targetObj.getFullYear();
+            const estM = String(targetObj.getMonth() + 1).padStart(2, '0');
+            const estD = String(targetObj.getDate()).padStart(2, '0');
+            reasonPrefix = `⚠️ 此為預購品，系統已將發售日提前 3 天。\n🗓️ 預估實際請款日為：${estY}-${estM}-${estD}\n--------------------------\n`;
+        }
+
+        const c1Name = document.getElementById('card1Name').value || '卡片 A';
+        const c1Date = document.getElementById('card1Date').value || 1;
+        const c2Name = document.getElementById('card2Name').value || '卡片 B';
+        const c2Date = document.getElementById('card2Date').value || 1;
+
+        const c1NextBill = getNextBillDate(targetObj, c1Date);
+        const c2NextBill = getNextBillDate(targetObj, c2Date);
+
+        const c1DaysLeft = getDaysDiff(targetObj, c1NextBill);
+        const c2DaysLeft = getDaysDiff(targetObj, c2NextBill);
+
+        let bestCard = "";
+        let bestCardColor = "#27ae60"; 
+        let reason = "";
+
+        if (c1DaysLeft > c2DaysLeft) {
+            bestCard = c1Name;
+            bestCardColor = "#2980b9"; 
+            reason = `• 【${c1Name}】將於 ${c1NextBill.getMonth()+1}/${c1NextBill.getDate()} 出帳 (約剩 ${c1DaysLeft} 天)。\n• 【${c2Name}】將於 ${c2NextBill.getMonth()+1}/${c2NextBill.getDate()} 出帳 (約剩 ${c2DaysLeft} 天)。\n\n👉 結論：請用【${c1Name}】結帳！`;
+        } else if (c2DaysLeft > c1DaysLeft) {
+            bestCard = c2Name;
+            bestCardColor = "#e67e22"; 
+            reason = `• 【${c1Name}】將於 ${c1NextBill.getMonth()+1}/${c1NextBill.getDate()} 出帳 (約剩 ${c1DaysLeft} 天)。\n• 【${c2Name}】將於 ${c2NextBill.getMonth()+1}/${c2NextBill.getDate()} 出帳 (約剩 ${c2DaysLeft} 天)。\n\n👉 結論：請用【${c2Name}】結帳！`;
+        } else {
+            bestCard = "兩張皆可";
+            bestCardColor = "#8e44ad"; 
+            reason = `• 兩張卡的預計出帳天數相同 (皆剩約 ${c1DaysLeft} 天)。\n\n👉 結論：刷哪一張都可以！`;
+        }
+
+        document.getElementById('cardResult').innerHTML = `最佳推薦：<span style="color: ${bestCardColor};">${bestCard}</span>`;
+        document.getElementById('cardDetail').innerText = reasonPrefix + reason;
     }
 
     // === 1. 定價計算器 ===
@@ -464,7 +699,7 @@
 
     function clearHistory() { document.getElementById('pricingHistory').innerHTML = ''; }
 
-    // === 2. 計算機 ===
+    // === 3. 計算機 ===
     let calcExpr = "";
     let calcLastRes = "";
 
@@ -521,13 +756,13 @@
         else if (key === 'Escape') calcInput('AC');
     });
 
-    // === 3. 記事本 ===
+    // === 4. 記事本 ===
     const memoArea = document.getElementById('memoArea');
     if (localStorage.getItem('tool_memo')) memoArea.value = localStorage.getItem('tool_memo');
     memoArea.addEventListener('input', function() { localStorage.setItem('tool_memo', this.value); });
     function clearMemo() { if(confirm('確定要清空記事嗎？')) { memoArea.value = ''; localStorage.removeItem('tool_memo'); } }
 
-    // === 4. 商城捷徑 ===
+    // === 5-1. 商城直達捷徑 ===
     function openShop() {
         const shop = document.getElementById('shopSelector').value;
         const input = document.getElementById('shopInput').value.trim();
@@ -539,7 +774,6 @@
 
         let finalId = "";
         
-        // 自動擷取 ID 邏輯
         if (shop === 'melon') {
             const match = input.match(/product_id=(\d+)/);
             finalId = match ? match[1] : input.replace(/\D/g, '');
@@ -557,7 +791,6 @@
             finalId = match ? match[1] : input.replace(/[^a-zA-Z0-9_-]/g, '');
         }
 
-        // 組合網址並跳轉
         if (finalId) {
             let url = "";
             if (shop === 'melon') url = `https://www.melonbooks.co.jp/detail/detail.php?product_id=${finalId}`;
@@ -581,7 +814,60 @@
         } catch (err) { alert('無法讀取剪貼簿，請手動貼上'); }
     }
 
-    // === 5. 外連轉換 ===
+    // === 5-2. 關鍵字跨平台搜尋 ===
+    function doSearch(platform) {
+        const keyword = document.getElementById('searchKeyword').value.trim();
+        if (!keyword) {
+            alert('請先輸入搜尋關鍵字！');
+            return;
+        }
+
+        // 處理需要 Shift_JIS 特殊編碼的 SOFMAP
+        if (platform === 'sofmap') {
+            const form = document.createElement('form');
+            form.method = 'GET';
+            form.action = 'https://a.sofmap.com/search_result.aspx';
+            form.target = '_blank';
+            form.acceptCharset = 'Shift_JIS';
+
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'keyword';
+            input.value = keyword;
+
+            form.appendChild(input);
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+            return;
+        }
+
+        // 其餘平台走標準 UTF-8 編碼跳轉
+        const encoded = encodeURIComponent(keyword);
+        let url = "";
+        
+        switch(platform) {
+            case 'amazon': url = `https://www.amazon.co.jp/s?k=${encoded}`; break;
+            case 'melon': url = `https://www.melonbooks.co.jp/search/search.php?name=${encoded}`; break;
+            case 'surugaya': url = `https://www.suruga-ya.jp/search?search_word=${encoded}`; break;
+            case 'booth': url = `https://booth.pm/zh-tw/search/${encoded}`; break;
+            case 'yahoo': url = `https://auctions.yahoo.co.jp/search/search?p=${encoded}`; break;
+            case 'mercari': url = `https://jp.mercari.com/search?keyword=${encoded}`; break;
+            case 'amiami': url = `https://slist.amiami.jp/top/search/list?s_keywords=${encoded}`; break;
+            case 'ebten': url = `https://store.kadokawa.co.jp/shop/goods/search.aspx?keyword=${encoded}`; break;
+            case 'gamers': url = `https://www.gamers.co.jp/products/list.php?mode=search&smt=${encoded}`; break;
+            case 'trader_all': url = `https://www.trader.co.jp/shop/shopbrand.html?search=${encoded}`; break;
+            case 'trader_18': url = `https://www.trader.co.jp/shop/shopbrand.html?search=${encoded}&prize1=a`; break;
+            case 'rakuten': url = `https://books.rakuten.co.jp/search?sitem=${encoded}`; break;
+            case 'wondergoo': url = `https://shinseidowondergoo.com/search?q=${encoded}`; break;
+            case 'animate': url = `https://www.animate-onlineshop.jp/products/list.php?mode=search&smt=${encoded}`; break;
+            case 'neowing': url = `https://www.neowing.co.jp/searchs?q=${encoded}`; break;
+        }
+        
+        if (url) window.open(url, '_blank');
+    }
+
+    // === 6. 外連轉換 ===
     async function pasteFromClipboard() {
         try {
             const text = await navigator.clipboard.readText();
