@@ -27,7 +27,7 @@
         .container {
             background-color: var(--panel-bg);
             width: 100%;
-            max-width: 680px;
+            max-width: 800px; 
             border-radius: var(--border-radius);
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             overflow: hidden;
@@ -61,7 +61,7 @@
 
         .tab-btn {
             flex: 1;
-            padding: 12px 5px; 
+            padding: 12px 2px; 
             border: none;
             background: none;
             color: #bdc3c7;
@@ -101,8 +101,9 @@
             margin-bottom: 5px;
             font-weight: bold;
             color: #34495e;
+            font-size: 14px;
         }
-        input[type="text"], input[type="date"], input[type="number"], select, textarea {
+        input[type="text"], input[type="date"], input[type="number"], input[type="color"], select, textarea {
             width: 100%;
             padding: 10px;
             box-sizing: border-box;
@@ -216,12 +217,7 @@
             border-radius: 4px;
             margin-bottom: 15px;
         }
-        .settings-box label {
-            font-size: 13px;
-            color: #7f8c8d;
-        }
 
-        /* 搜尋引擎按鈕專用網格：自動排版適應 */
         .search-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -239,6 +235,61 @@
             text-align: center;
         }
         .search-btn:hover { opacity: 0.8; }
+
+        /* GridFlow 特定樣式 */
+        .gf-workspace {
+            background-color: #ffffff; 
+            padding: 20px; 
+            border: 2px dashed #cbd5e1;
+            border-radius: 6px;
+            width: 100%;
+            min-height: 350px;
+            display: flex;
+            flex-wrap: wrap; 
+            align-content: flex-start;
+            transition: gap 0.2s;
+            position: relative;
+        }
+        .img-card {
+            position: relative;
+            cursor: grab;
+            user-select: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #eee;
+            transition: transform 0.1s;
+        }
+        .img-card.dragging {
+            opacity: 0.5;
+            border: 2px dashed var(--primary-color);
+            cursor: grabbing;
+        }
+        .img-card img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            pointer-events: none; 
+        }
+        .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 24px;
+            height: 24px;
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 22px;
+            font-size: 16px;
+            cursor: pointer;
+            z-index: 20;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .img-card:hover .delete-btn { opacity: 1; }
     </style>
 </head>
 <body>
@@ -249,12 +300,13 @@
     </div>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('pricing')">📊 定價</button>
-        <button class="tab-btn" onclick="switchTab('card')">💳 刷卡</button>
+        <button class="tab-btn active" onclick="switchTab('pricing')">📊 商品計價</button>
         <button class="tab-btn" onclick="switchTab('calc')">📟 計算機</button>
+        <button class="tab-btn" onclick="switchTab('shop')">🛒 商城外連</button>
         <button class="tab-btn" onclick="switchTab('memo')">📝 記事本</button>
-        <button class="tab-btn" onclick="switchTab('shop')">🛒 商城</button>
-        <button class="tab-btn" onclick="switchTab('link')">🔗 外連</button>
+        <button class="tab-btn" onclick="switchTab('gridflow')">🖼️ 圖片合併</button>
+        <button class="tab-btn" onclick="switchTab('card')">💳 刷卡判斷</button>
+        <button class="tab-btn" onclick="switchTab('link')">🔗 圖片外連</button>
     </div>
 
     <div id="pricing" class="tab-content active">
@@ -267,7 +319,6 @@
                 <option value="3">會場代購計價計算器</option>
             </select>
         </div>
-
         <div class="form-group">
             <input type="text" id="jpyInput" placeholder="日幣售價（可輸入算式，如 6820/1.1）">
         </div>
@@ -280,60 +331,13 @@
         <div class="form-group" id="shipGroup">
             <input type="text" id="shipInput" placeholder="國際運費（台幣）">
         </div>
-
         <button class="action-btn" onclick="calculatePrice()">計算</button>
-        
         <div class="result-box" id="priceResult">建議售價：</div>
-
         <label>歷史紀錄：</label>
         <ul class="history-list" id="pricingHistory"></ul>
         <div style="margin-top: 10px; display: flex; gap: 10px;">
             <button class="action-btn secondary" onclick="clearPricingInputs()">🧹 清除輸入</button>
             <button class="action-btn danger" onclick="clearHistory()">🗑️ 清空紀錄</button>
-        </div>
-    </div>
-
-    <div id="card" class="tab-content">
-        <div class="settings-box">
-            <label style="margin-bottom: 10px; display: block; font-weight: bold; color: #2c3e50;">⚙️ 信用卡設定 (系統會自動記憶)</label>
-            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                <div style="flex: 2;">
-                    <label>卡片 A 名稱</label>
-                    <input type="text" id="card1Name" placeholder="例如: 中國信託" value="中國信託" onchange="saveCardSettings(); recommendCard()">
-                </div>
-                <div style="flex: 1;">
-                    <label>A 出帳日</label>
-                    <input type="number" id="card1Date" min="1" max="31" placeholder="日" value="5" onchange="saveCardSettings(); recommendCard()">
-                </div>
-            </div>
-            <div style="display: flex; gap: 10px;">
-                <div style="flex: 2;">
-                    <label>卡片 B 名稱</label>
-                    <input type="text" id="card2Name" placeholder="例如: 華南銀行" value="華南銀行" onchange="saveCardSettings(); recommendCard()">
-                </div>
-                <div style="flex: 1;">
-                    <label>B 出帳日</label>
-                    <input type="number" id="card2Date" min="1" max="31" placeholder="日" value="23" onchange="saveCardSettings(); recommendCard()">
-                </div>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>請款時機：</label>
-            <select id="chargeType" onchange="toggleDateLabel(); recommendCard()">
-                <option value="immediate">當下立刻請款 (現貨 / 訂購即扣款)</option>
-                <option value="release">發售前夕請款 (出貨前才扣款的預購品)</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label id="dateLabel">選擇刷卡日期 (預設為今天)：</label>
-            <input type="date" id="swipeDate" onchange="recommendCard()">
-        </div>
-        <button class="action-btn" onclick="recommendCard()">💡 分析最佳刷卡卡片</button>
-        
-        <div class="result-box" id="cardResult">建議刷卡：請選擇日期</div>
-        <div class="card-detail-text" id="cardDetail">
-            分析結果將顯示在此處。
         </div>
     </div>
 
@@ -347,22 +351,18 @@
             <button class="calc-btn op" onclick="calcInput('(')">(</button>
             <button class="calc-btn op" onclick="calcInput(')')">)</button>
             <button class="calc-btn op" onclick="calcInput('DEL')">←</button>
-
             <button class="calc-btn" onclick="calcInput('7')">7</button>
             <button class="calc-btn" onclick="calcInput('8')">8</button>
             <button class="calc-btn" onclick="calcInput('9')">9</button>
             <button class="calc-btn op" onclick="calcInput('/')">÷</button>
-
             <button class="calc-btn" onclick="calcInput('4')">4</button>
             <button class="calc-btn" onclick="calcInput('5')">5</button>
             <button class="calc-btn" onclick="calcInput('6')">6</button>
             <button class="calc-btn op" onclick="calcInput('*')">×</button>
-
             <button class="calc-btn" onclick="calcInput('1')">1</button>
             <button class="calc-btn" onclick="calcInput('2')">2</button>
             <button class="calc-btn" onclick="calcInput('3')">3</button>
             <button class="calc-btn op" onclick="calcInput('-')">-</button>
-
             <button class="calc-btn" onclick="calcInput('0')">0</button>
             <button class="calc-btn" onclick="calcInput('.')">.</button>
             <button class="calc-btn eq" onclick="calcInput('=')">=</button>
@@ -370,13 +370,7 @@
         </div>
     </div>
 
-    <div id="memo" class="tab-content">
-        <textarea class="memo-area" id="memoArea" placeholder="在這裡輸入記事內容... (自動儲存)"></textarea>
-        <button class="action-btn danger" onclick="clearMemo()">🧹 清空記事</button>
-    </div>
-
     <div id="shop" class="tab-content">
-        
         <h3 style="margin-top: 0; margin-bottom: 15px; color: #2c3e50; font-size: 16px; border-left: 4px solid var(--accent-color); padding-left: 8px;">📌 商品編號直達</h3>
         <div class="form-group">
             <label>選擇商城：</label>
@@ -413,17 +407,119 @@
             <button class="search-btn" style="background-color: #2ecc71;" onclick="doSearch('melon')">🍈 Melonbooks</button>
             <button class="search-btn" style="background-color: #9b59b6;" onclick="doSearch('surugaya')">📦 駿河屋</button>
             <button class="search-btn" style="background-color: #e74c3c;" onclick="doSearch('booth')">🎨 BOOTH</button>
-            <button class="search-btn" style="background-color: #f1c40f; color: #333;" onclick="doSearch('yahoo')">🔨 日本 Yahoo 拍賣</button>
+            <button class="search-btn" style="background-color: #f1c40f; color: #333;" onclick="doSearch('yahoo')">🔨 日本Yahoo 拍賣</button>
             <button class="search-btn" style="background-color: #e056fd;" onclick="doSearch('mercari')">🛍️ Mercari</button>
             <button class="search-btn" style="background-color: #e67e22;" onclick="doSearch('amiami')">🌟 Amiami</button>
             <button class="search-btn" style="background-color: #34495e;" onclick="doSearch('ebten')">📚 ebten</button>
             <button class="search-btn" style="background-color: #2980b9;" onclick="doSearch('gamers')">🎮 Gamers</button>
-            <button class="search-btn" style="background-color: #16a085;" onclick="doSearch('trader_all')">💿 Trader(一般)</button>
-            <button class="search-btn" style="background-color: #c0392b;" onclick="doSearch('trader_18')">🔞 Trader(18禁)</button>
+            <button class="search-btn" style="background-color: #16a085;" onclick="doSearch('trader')">💿 Trader (綜合)</button>
             <button class="search-btn" style="background-color: #bf0000;" onclick="doSearch('rakuten')">📖 楽天ブックス</button>
             <button class="search-btn" style="background-color: #2c3e50;" onclick="doSearch('wondergoo')">💿 WonderGOO</button>
             <button class="search-btn" style="background-color: #004bbb;" onclick="doSearch('animate')">🅰️ アニメイト</button>
             <button class="search-btn" style="background-color: #1abc9c;" onclick="doSearch('neowing')">💿 Neowing</button>
+        </div>
+    </div>
+
+    <div id="memo" class="tab-content">
+        <textarea class="memo-area" id="memoArea" placeholder="在這裡輸入記事內容... (自動儲存)"></textarea>
+        <button class="action-btn danger" onclick="clearMemo()">🧹 清空記事</button>
+    </div>
+
+    <div id="gridflow" class="tab-content">
+        <div class="form-group">
+            <button class="action-btn" onclick="document.getElementById('fileInput').click()" style="background-color: #10b981; margin-bottom:0;">📷 點擊上傳商品圖片 (可多選)</button>
+            <input type="file" id="fileInput" multiple accept="image/*" style="display: none;">
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+            <div class="form-group" style="flex: 1;">
+                <label>排列模式</label>
+                <select id="layoutMode">
+                    <option value="grid" selected>網格 (Grid)</option>
+                    <option value="horizontal">橫向 (Horizontal)</option>
+                    <option value="vertical">縱向 (Vertical)</option>
+                </select>
+            </div>
+            <div class="form-group" id="gridSettings" style="flex: 1;">
+                <label>每列張數</label>
+                <input type="number" id="colCount" value="2" min="1" max="10">
+            </div>
+        </div>
+
+        <div class="form-group" id="gridInvertSetting" style="background: #f1f5f9; padding: 10px; border-radius: 4px;">
+            <label style="display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer; font-weight: normal;">
+                <input type="checkbox" id="incompleteTop" style="width: auto;">
+                <span>將未滿的排置頂 (倒金字塔)</span>
+            </label>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+            <div class="form-group" style="flex: 1;">
+                <label>間距 (px)</label>
+                <input type="number" id="gapSize" value="10" min="0" max="100">
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label>背景顏色</label>
+                <input type="color" id="bgColor" value="#ffffff" style="padding: 2px 5px; height: 40px;">
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label>格式</label>
+                <select id="exportFormat">
+                    <option value="image/jpeg">JPG</option>
+                    <option value="image/png">PNG</option>
+                    <option value="image/webp">WebP</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 10px;">
+            <button id="downloadBtn" class="action-btn" disabled>⬇️ 下載合併圖片</button>
+            <button id="clearImgBtn" class="action-btn secondary">🗑️ 清空畫布</button>
+        </div>
+
+        <div id="interactive-area" class="gf-workspace"></div>
+        <canvas id="renderCanvas" style="display:none;"></canvas>
+    </div>
+
+    <div id="card" class="tab-content">
+        <div class="settings-box">
+            <label style="margin-bottom: 10px; display: block; font-weight: bold; color: #2c3e50;">⚙️ 信用卡設定 (系統會自動記憶)</label>
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <div style="flex: 2;">
+                    <label>卡片 A 名稱</label>
+                    <input type="text" id="card1Name" placeholder="例如: 中國信託" value="中國信託" onchange="saveCardSettings(); recommendCard()">
+                </div>
+                <div style="flex: 1;">
+                    <label>A 出帳日</label>
+                    <input type="number" id="card1Date" min="1" max="31" placeholder="日" value="5" onchange="saveCardSettings(); recommendCard()">
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <div style="flex: 2;">
+                    <label>卡片 B 名稱</label>
+                    <input type="text" id="card2Name" placeholder="例如: 華南銀行" value="華南銀行" onchange="saveCardSettings(); recommendCard()">
+                </div>
+                <div style="flex: 1;">
+                    <label>B 出帳日</label>
+                    <input type="number" id="card2Date" min="1" max="31" placeholder="日" value="23" onchange="saveCardSettings(); recommendCard()">
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>請款時機：</label>
+            <select id="chargeType" onchange="toggleDateLabel(); recommendCard()">
+                <option value="immediate">當下立刻請款 (現貨 / 訂購即扣款)</option>
+                <option value="release">發售前夕請款 (出貨前才扣款的預購品)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label id="dateLabel">選擇刷卡日期 (預設為今天)：</label>
+            <input type="date" id="swipeDate" onchange="recommendCard()">
+        </div>
+        <button class="action-btn" onclick="recommendCard()">💡 分析最佳刷卡卡片</button>
+        <div class="result-box" id="cardResult">建議刷卡：請選擇日期</div>
+        <div class="card-detail-text" id="cardDetail">
+            分析結果將顯示在此處。
         </div>
     </div>
 
@@ -439,7 +535,6 @@
             <button class="action-btn" onclick="convertLink()">轉換</button>
             <button class="action-btn secondary" id="copyLinkBtn" onclick="copyLink()" disabled>📋 複製</button>
         </div>
-        
         <div class="form-group" style="margin-top: 15px;">
             <label>轉換結果：</label>
             <textarea id="linkOutput" rows="4" readonly></textarea>
@@ -451,10 +546,10 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
+        // 工具箱初始化
         loadRate();
         updatePricingFields();
         setupEnterKeyBindings();
-        
         loadCardSettings(); 
         initCardDate(); 
 
@@ -468,128 +563,30 @@
             });
         }
         
-        // 關鍵字搜尋框支援 Enter 送出（預設以 Amazon 搜尋，或可自行調整）
         const searchInput = document.getElementById('searchKeyword');
         if (searchInput) {
             searchInput.addEventListener('keydown', (event) => {
                 if (event.key === 'Enter') {
                     event.preventDefault();
-                    // 若想按 Enter 預設開啟某個平台，可取消下方註解並替換平台名稱
-                    // doSearch('amazon'); 
                 }
             });
         }
+
+        // 初始化 GridFlow
+        initGridFlow();
     });
 
+    // === 核心：分頁切換邏輯 (已對應最新排序) ===
     function switchTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         
         document.getElementById(tabId).classList.add('active');
-        const index = ['pricing', 'card', 'calc', 'memo', 'shop', 'link'].indexOf(tabId);
+        const index = ['pricing', 'calc', 'shop', 'memo', 'gridflow', 'card', 'link'].indexOf(tabId);
         document.querySelectorAll('.tab-btn')[index].classList.add('active');
     }
 
-    // === 動態刷卡建議邏輯 ===
-    function saveCardSettings() {
-        localStorage.setItem('tool_card1_name', document.getElementById('card1Name').value);
-        localStorage.setItem('tool_card1_date', document.getElementById('card1Date').value);
-        localStorage.setItem('tool_card2_name', document.getElementById('card2Name').value);
-        localStorage.setItem('tool_card2_date', document.getElementById('card2Date').value);
-    }
-
-    function loadCardSettings() {
-        if (localStorage.getItem('tool_card1_name')) document.getElementById('card1Name').value = localStorage.getItem('tool_card1_name');
-        if (localStorage.getItem('tool_card1_date')) document.getElementById('card1Date').value = localStorage.getItem('tool_card1_date');
-        if (localStorage.getItem('tool_card2_name')) document.getElementById('card2Name').value = localStorage.getItem('tool_card2_name');
-        if (localStorage.getItem('tool_card2_date')) document.getElementById('card2Date').value = localStorage.getItem('tool_card2_date');
-    }
-
-    function toggleDateLabel() {
-        const type = document.getElementById('chargeType').value;
-        const label = document.getElementById('dateLabel');
-        if (type === 'release') {
-            label.innerText = '輸入預計發售日 (系統將自動提前 3 天作預估請款日)：';
-        } else {
-            label.innerText = '選擇刷卡日期 (預設為今天)：';
-        }
-    }
-
-    function initCardDate() {
-        const today = new Date();
-        const yyyy = today.getFullYear();
-        const mm = String(today.getMonth() + 1).padStart(2, '0');
-        const dd = String(today.getDate()).padStart(2, '0');
-        document.getElementById('swipeDate').value = `${yyyy}-${mm}-${dd}`;
-        recommendCard();
-    }
-
-    function getNextBillDate(currentDate, billDayStr) {
-        let billDay = parseInt(billDayStr) || 1;
-        let y = currentDate.getFullYear();
-        let m = currentDate.getMonth();
-        let d = currentDate.getDate();
-
-        if (d >= billDay) {
-            m += 1;
-        }
-        return new Date(y, m, billDay);
-    }
-
-    function getDaysDiff(currentDate, targetDate) {
-        return Math.ceil((targetDate - currentDate) / (1000 * 60 * 60 * 24));
-    }
-
-    function recommendCard() {
-        const dateStr = document.getElementById('swipeDate').value;
-        if (!dateStr) return;
-        
-        const type = document.getElementById('chargeType').value;
-        let targetObj = new Date(dateStr);
-        let reasonPrefix = "";
-
-        if (type === 'release') {
-            targetObj.setDate(targetObj.getDate() - 3);
-            const estY = targetObj.getFullYear();
-            const estM = String(targetObj.getMonth() + 1).padStart(2, '0');
-            const estD = String(targetObj.getDate()).padStart(2, '0');
-            reasonPrefix = `⚠️ 此為預購品，系統已將發售日提前 3 天。\n🗓️ 預估實際請款日為：${estY}-${estM}-${estD}\n--------------------------\n`;
-        }
-
-        const c1Name = document.getElementById('card1Name').value || '卡片 A';
-        const c1Date = document.getElementById('card1Date').value || 1;
-        const c2Name = document.getElementById('card2Name').value || '卡片 B';
-        const c2Date = document.getElementById('card2Date').value || 1;
-
-        const c1NextBill = getNextBillDate(targetObj, c1Date);
-        const c2NextBill = getNextBillDate(targetObj, c2Date);
-
-        const c1DaysLeft = getDaysDiff(targetObj, c1NextBill);
-        const c2DaysLeft = getDaysDiff(targetObj, c2NextBill);
-
-        let bestCard = "";
-        let bestCardColor = "#27ae60"; 
-        let reason = "";
-
-        if (c1DaysLeft > c2DaysLeft) {
-            bestCard = c1Name;
-            bestCardColor = "#2980b9"; 
-            reason = `• 【${c1Name}】將於 ${c1NextBill.getMonth()+1}/${c1NextBill.getDate()} 出帳 (約剩 ${c1DaysLeft} 天)。\n• 【${c2Name}】將於 ${c2NextBill.getMonth()+1}/${c2NextBill.getDate()} 出帳 (約剩 ${c2DaysLeft} 天)。\n\n👉 結論：請用【${c1Name}】結帳！`;
-        } else if (c2DaysLeft > c1DaysLeft) {
-            bestCard = c2Name;
-            bestCardColor = "#e67e22"; 
-            reason = `• 【${c1Name}】將於 ${c1NextBill.getMonth()+1}/${c1NextBill.getDate()} 出帳 (約剩 ${c1DaysLeft} 天)。\n• 【${c2Name}】將於 ${c2NextBill.getMonth()+1}/${c2NextBill.getDate()} 出帳 (約剩 ${c2DaysLeft} 天)。\n\n👉 結論：請用【${c2Name}】結帳！`;
-        } else {
-            bestCard = "兩張皆可";
-            bestCardColor = "#8e44ad"; 
-            reason = `• 兩張卡的預計出帳天數相同 (皆剩約 ${c1DaysLeft} 天)。\n\n👉 結論：刷哪一張都可以！`;
-        }
-
-        document.getElementById('cardResult').innerHTML = `最佳推薦：<span style="color: ${bestCardColor};">${bestCard}</span>`;
-        document.getElementById('cardDetail').innerText = reasonPrefix + reason;
-    }
-
-    // === 1. 定價計算器 ===
+    // === 1. 定價計算器邏輯 ===
     function setupEnterKeyBindings() {
         const inputs = ['jpyInput', 'jpShipInput', 'rateInput', 'shipInput'];
         inputs.forEach(id => {
@@ -599,14 +596,11 @@
                     if (event.key === 'Enter') {
                         event.preventDefault();
                         calculatePrice();
-                        
                         const currentIndex = inputs.indexOf(id);
                         const nextIndex = currentIndex + 1;
                         if (nextIndex < inputs.length) {
                             const nextElement = document.getElementById(inputs[nextIndex]);
-                            if (nextElement) {
-                                nextElement.focus();
-                            }
+                            if (nextElement) nextElement.focus();
                         } else {
                             document.getElementById(inputs[0]).focus();
                         }
@@ -653,8 +647,7 @@
         const rate = evalExpr(document.getElementById('rateInput').value);
         const ship = evalExpr(document.getElementById('shipInput').value);
 
-        let result = 0;
-        let rateDisplay = ''; 
+        let result = 0; let rateDisplay = ''; 
 
         if (mode === 0) {
             localStorage.setItem('tool_last_rate', rate);
@@ -666,23 +659,19 @@
             else if (jpy >= 4000 && jpy <= 7999) { base = jpy * 1.05 * 0.26 + 50; base += (base <= 1999) ? 100 : 200; }
             else if (jpy >= 8000 && jpy <= 11999) { base = jpy * 1.05 * 0.25 + 50; base += (base <= 2999) ? 200 : 300; }
             else { base = jpy * 1.05 * 0.245 + 50; if (base <= 3999) base += 300; else if (base <= 4999) base += 400; else if (base <= 5999) base += 500; else if (base <= 6999) base += 600; else base += 700; }
-            result = base / 0.95;
-            rateDisplay = `[固定係數]`;
+            result = base / 0.95; rateDisplay = `[固定係數]`;
         } else if (mode === 2) {
             localStorage.setItem('tool_last_rate', rate);
             let base = jpy * 1.05 * rate; 
             if (base <= 1000) base += 50; else if (base <= 1999) base += 100; else if (base <= 2999) base += 200; else if (base <= 3999) base += 300; else base += 400;
-            result = base / 0.95;
-            rateDisplay = `@係數${rate}`;
+            result = base / 0.95; rateDisplay = `@係數${rate}`;
         } else if (mode === 3) {
             localStorage.setItem('tool_last_rate', rate);
-            result = (jpy * 1.15 * rate + ship) / 0.8;
-            rateDisplay = `@匯率${rate}`;
+            result = (jpy * 1.15 * rate + ship) / 0.8; rateDisplay = `@匯率${rate}`;
         }
 
         const final = result.toFixed(2);
         document.getElementById('priceResult').innerText = `建議售價：NT$ ${final}`;
-        
         const modeName = document.getElementById('modeSelector').options[mode].text;
         const historyItem = document.createElement('li');
         historyItem.innerText = `[${modeName}] 售價：${document.getElementById('jpyInput').value} ${rateDisplay} → NT$${final}`;
@@ -696,13 +685,10 @@
         document.getElementById('shipInput').value = '';
         document.getElementById('priceResult').innerText = '建議售價：';
     }
-
     function clearHistory() { document.getElementById('pricingHistory').innerHTML = ''; }
 
-    // === 3. 計算機 ===
-    let calcExpr = "";
-    let calcLastRes = "";
-
+    // === 2. 計算機邏輯 ===
+    let calcExpr = ""; let calcLastRes = "";
     function calcInput(key) {
         const display = document.getElementById('calcResult');
         const exprDisplay = document.getElementById('calcExpr');
@@ -736,7 +722,6 @@
                         else if (operator === '/') { if (nextOperand === 0) throw new Error('Division by zero'); result /= nextOperand; }
                     }
                 }
-                
                 const finalResult = Math.round(result * 100) / 100;
                 calcLastRes = finalResult.toString();
                 display.innerText = finalResult; exprDisplay.innerText = calcExpr + " ="; calcExpr = "";
@@ -746,7 +731,6 @@
             calcExpr += key; display.innerText = calcExpr;
         }
     }
-    
     document.addEventListener('keydown', function(event) {
         if (!document.getElementById('calc').classList.contains('active')) return;
         const key = event.key;
@@ -756,40 +740,18 @@
         else if (key === 'Escape') calcInput('AC');
     });
 
-    // === 4. 記事本 ===
-    const memoArea = document.getElementById('memoArea');
-    if (localStorage.getItem('tool_memo')) memoArea.value = localStorage.getItem('tool_memo');
-    memoArea.addEventListener('input', function() { localStorage.setItem('tool_memo', this.value); });
-    function clearMemo() { if(confirm('確定要清空記事嗎？')) { memoArea.value = ''; localStorage.removeItem('tool_memo'); } }
-
-    // === 5-1. 商城直達捷徑 ===
+    // === 3. 商城捷徑與搜尋邏輯 ===
     function openShop() {
         const shop = document.getElementById('shopSelector').value;
         const input = document.getElementById('shopInput').value.trim();
-        
-        if (!input) {
-            alert('請先輸入商品編號或網址！');
-            return;
-        }
+        if (!input) { alert('請先輸入商品編號或網址！'); return; }
 
         let finalId = "";
-        
-        if (shop === 'melon') {
-            const match = input.match(/product_id=(\d+)/);
-            finalId = match ? match[1] : input.replace(/\D/g, '');
-        } else if (shop === 'surugaya') {
-            const match = input.match(/detail\/([a-zA-Z0-9_-]+)/);
-            finalId = match ? match[1] : input.replace(/[^a-zA-Z0-9_-]/g, '');
-        } else if (shop === 'booth') {
-            const match = input.match(/items\/(\d+)/);
-            finalId = match ? match[1] : input.replace(/\D/g, '');
-        } else if (shop === 'yahoo') {
-            const match = input.match(/auction\/([a-zA-Z0-9_-]+)/);
-            finalId = match ? match[1] : input.replace(/[^a-zA-Z0-9_-]/g, '');
-        } else if (shop === 'mercari') {
-            const match = input.match(/item\/([a-zA-Z0-9_-]+)/);
-            finalId = match ? match[1] : input.replace(/[^a-zA-Z0-9_-]/g, '');
-        }
+        if (shop === 'melon') { const match = input.match(/product_id=(\d+)/); finalId = match ? match[1] : input.replace(/\D/g, ''); }
+        else if (shop === 'surugaya') { const match = input.match(/detail\/([a-zA-Z0-9_-]+)/); finalId = match ? match[1] : input.replace(/[^a-zA-Z0-9_-]/g, ''); }
+        else if (shop === 'booth') { const match = input.match(/items\/(\d+)/); finalId = match ? match[1] : input.replace(/\D/g, ''); }
+        else if (shop === 'yahoo') { const match = input.match(/auction\/([a-zA-Z0-9_-]+)/); finalId = match ? match[1] : input.replace(/[^a-zA-Z0-9_-]/g, ''); }
+        else if (shop === 'mercari') { const match = input.match(/item\/([a-zA-Z0-9_-]+)/); finalId = match ? match[1] : input.replace(/[^a-zA-Z0-9_-]/g, ''); }
 
         if (finalId) {
             let url = "";
@@ -798,54 +760,37 @@
             else if (shop === 'booth') url = `https://booth.pm/zh-tw/items/${finalId}`;
             else if (shop === 'yahoo') url = `https://auctions.yahoo.co.jp/jp/auction/${finalId}`;
             else if (shop === 'mercari') url = `https://jp.mercari.com/item/${finalId}`;
-
             window.open(url, '_blank');
             document.getElementById('shopInput').value = '';
-        } else {
-            alert('無法辨識商品編號，請確認後重新輸入！');
-        }
+        } else { alert('無法辨識商品編號，請確認後重新輸入！'); }
     }
 
     async function pasteToShopInput() {
-        try {
-            const text = await navigator.clipboard.readText();
-            document.getElementById('shopInput').value = text;
-            openShop(); 
-        } catch (err) { alert('無法讀取剪貼簿，請手動貼上'); }
+        try { const text = await navigator.clipboard.readText(); document.getElementById('shopInput').value = text; openShop(); } catch (err) { alert('無法讀取剪貼簿，請手動貼上'); }
     }
 
-    // === 5-2. 關鍵字跨平台搜尋 ===
     function doSearch(platform) {
         const keyword = document.getElementById('searchKeyword').value.trim();
-        if (!keyword) {
-            alert('請先輸入搜尋關鍵字！');
-            return;
-        }
+        if (!keyword) { alert('請先輸入搜尋關鍵字！'); return; }
 
-        // 處理需要 Shift_JIS 特殊編碼的 SOFMAP
         if (platform === 'sofmap') {
             const form = document.createElement('form');
-            form.method = 'GET';
-            form.action = 'https://a.sofmap.com/search_result.aspx';
-            form.target = '_blank';
-            form.acceptCharset = 'Shift_JIS';
-
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'keyword';
-            input.value = keyword;
-
-            form.appendChild(input);
-            document.body.appendChild(form);
-            form.submit();
-            document.body.removeChild(form);
+            form.method = 'GET'; form.action = 'https://a.sofmap.com/search_result.aspx'; form.target = '_blank'; form.acceptCharset = 'Shift_JIS';
+            const input = document.createElement('input'); input.type = 'hidden'; input.name = 'keyword'; input.value = keyword;
+            form.appendChild(input); document.body.appendChild(form); form.submit(); document.body.removeChild(form);
             return;
         }
 
-        // 其餘平台走標準 UTF-8 編碼跳轉
+        if (platform === 'trader') {
+            const form = document.createElement('form');
+            form.method = 'GET'; form.action = 'https://www.trader.co.jp/shop/shopbrand.html'; form.target = '_blank'; form.acceptCharset = 'EUC-JP';
+            const input = document.createElement('input'); input.type = 'hidden'; input.name = 'search'; input.value = keyword;
+            form.appendChild(input); document.body.appendChild(form); form.submit(); document.body.removeChild(form);
+            return;
+        }
+
         const encoded = encodeURIComponent(keyword);
         let url = "";
-        
         switch(platform) {
             case 'amazon': url = `https://www.amazon.co.jp/s?k=${encoded}`; break;
             case 'melon': url = `https://www.melonbooks.co.jp/search/search.php?name=${encoded}`; break;
@@ -856,26 +801,404 @@
             case 'amiami': url = `https://slist.amiami.jp/top/search/list?s_keywords=${encoded}`; break;
             case 'ebten': url = `https://store.kadokawa.co.jp/shop/goods/search.aspx?keyword=${encoded}`; break;
             case 'gamers': url = `https://www.gamers.co.jp/products/list.php?mode=search&smt=${encoded}`; break;
-            case 'trader_all': url = `https://www.trader.co.jp/shop/shopbrand.html?search=${encoded}`; break;
-            case 'trader_18': url = `https://www.trader.co.jp/shop/shopbrand.html?search=${encoded}&prize1=a`; break;
             case 'rakuten': url = `https://books.rakuten.co.jp/search?sitem=${encoded}`; break;
             case 'wondergoo': url = `https://shinseidowondergoo.com/search?q=${encoded}`; break;
             case 'animate': url = `https://www.animate-onlineshop.jp/products/list.php?mode=search&smt=${encoded}`; break;
             case 'neowing': url = `https://www.neowing.co.jp/searchs?q=${encoded}`; break;
         }
-        
         if (url) window.open(url, '_blank');
     }
 
-    // === 6. 外連轉換 ===
-    async function pasteFromClipboard() {
-        try {
-            const text = await navigator.clipboard.readText();
-            document.getElementById('linkInput').value = text;
-            convertLink();
-        } catch (err) { alert('無法讀取剪貼簿，請手動貼上'); }
+    // === 4. 記事本邏輯 ===
+    const memoArea = document.getElementById('memoArea');
+    if (localStorage.getItem('tool_memo')) memoArea.value = localStorage.getItem('tool_memo');
+    memoArea.addEventListener('input', function() { localStorage.setItem('tool_memo', this.value); });
+    function clearMemo() { if(confirm('確定要清空記事嗎？')) { memoArea.value = ''; localStorage.removeItem('tool_memo'); } }
+
+    // === 5. GridFlow 圖片合併邏輯 ===
+    let gfItems = []; 
+    let gfDraggedItem = null;
+
+    function initGridFlow() {
+        const gfFileInput = document.getElementById('fileInput');
+        const layoutModeSelect = document.getElementById('layoutMode');
+        const colCountInput = document.getElementById('colCount');
+        const incompleteTopInput = document.getElementById('incompleteTop');
+        const gapSizeInput = document.getElementById('gapSize');
+        const bgColorInput = document.getElementById('bgColor');
+        const dlBtn = document.getElementById('downloadBtn');
+        const clrBtn = document.getElementById('clearImgBtn');
+        const gridSet = document.getElementById('gridSettings');
+        const gridInvSet = document.getElementById('gridInvertSetting');
+        const interactArea = document.getElementById('interactive-area');
+
+        if (!gfFileInput) return;
+
+        gfFileInput.addEventListener('change', handleUpload);
+        
+        [layoutModeSelect, colCountInput, incompleteTopInput, gapSizeInput, bgColorInput].forEach(el => {
+            el.addEventListener('input', updateLayoutVisuals);
+            el.addEventListener('change', updateLayoutVisuals);
+        });
+
+        layoutModeSelect.addEventListener('change', () => {
+            if(layoutModeSelect.value === 'grid') {
+                gridSet.style.display = 'block';
+                gridInvSet.style.display = 'block';
+            } else {
+                gridSet.style.display = 'none';
+                gridInvSet.style.display = 'none';
+            }
+        });
+
+        clrBtn.addEventListener('click', () => {
+            gfItems = [];
+            renderInteractiveArea();
+            gfFileInput.value = '';
+        });
+
+        dlBtn.addEventListener('click', generateAndDownload);
+
+        interactArea.addEventListener('dragover', (e) => {
+            e.preventDefault(); 
+            if (!gfDraggedItem) return;
+            const targetCard = e.target.closest('.img-card');
+            if (targetCard && targetCard !== gfDraggedItem) {
+                const children = Array.from(interactArea.children);
+                const draggedIdx = children.indexOf(gfDraggedItem);
+                const targetIdx = children.indexOf(targetCard);
+                if (draggedIdx < targetIdx) targetCard.after(gfDraggedItem);
+                else targetCard.before(gfDraggedItem);
+                setTimeout(updateLayoutVisuals, 0); 
+            }
+        });
     }
 
+    async function handleUpload(e) {
+        if (!e.target.files || e.target.files.length === 0) return;
+        const files = Array.from(e.target.files);
+        try {
+            const promises = files.map(file => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (evt) => {
+                        resolve({ id: Math.random().toString(36).substr(2, 9), src: evt.target.result });
+                    };
+                    reader.onerror = () => reject('圖片讀取失敗');
+                    reader.readAsDataURL(file);
+                });
+            });
+            const newItems = await Promise.all(promises);
+            gfItems = [...gfItems, ...newItems];
+            renderInteractiveArea();
+        } catch (err) { alert('部分圖片上傳失敗'); } 
+        finally { document.getElementById('fileInput').value = ''; }
+    }
+
+    function renderInteractiveArea() {
+        const interactArea = document.getElementById('interactive-area');
+        const dlBtn = document.getElementById('downloadBtn');
+        interactArea.innerHTML = '';
+
+        if (gfItems.length === 0) {
+            interactArea.innerHTML = '<p style="color:#aaa; width:100%; text-align:center; padding-top:100px; pointer-events: none;">拖曳或點擊上方按鈕上傳圖片</p>';
+            dlBtn.disabled = true;
+            return;
+        }
+        dlBtn.disabled = false;
+
+        gfItems.forEach((item) => {
+            const card = document.createElement('div');
+            card.className = 'img-card';
+            card.draggable = true;
+            card.dataset.id = item.id;
+            
+            const delBtn = document.createElement('div');
+            delBtn.className = 'delete-btn';
+            delBtn.innerHTML = '×';
+            delBtn.onclick = (e) => {
+                e.stopPropagation();
+                gfItems = gfItems.filter(i => i.id !== item.id);
+                renderInteractiveArea();
+            };
+            
+            const img = document.createElement('img');
+            img.src = item.src;
+            
+            card.appendChild(img);
+            card.appendChild(delBtn);
+            
+            card.addEventListener('dragstart', function(e) {
+                gfDraggedItem = this;
+                setTimeout(() => this.classList.add('dragging'), 0);
+            });
+
+            card.addEventListener('dragend', function() {
+                this.classList.remove('dragging');
+                gfDraggedItem = null;
+                synchronizeItems(); 
+                updateLayoutVisuals();
+            });
+
+            interactArea.appendChild(card);
+        });
+        updateLayoutVisuals();
+    }
+
+    function synchronizeItems() {
+        const interactArea = document.getElementById('interactive-area');
+        const currentCards = Array.from(interactArea.querySelectorAll('.img-card'));
+        const newItems = [];
+        currentCards.forEach(card => {
+            const id = card.dataset.id;
+            const item = gfItems.find(i => i.id === id);
+            if (item) newItems.push(item);
+        });
+        gfItems = newItems;
+    }
+
+    function updateLayoutVisuals() {
+        const interactArea = document.getElementById('interactive-area');
+        const mode = document.getElementById('layoutMode').value;
+        const gap = parseInt(document.getElementById('gapSize').value) || 0;
+        const bg = document.getElementById('bgColor').value;
+        const colCount = parseInt(document.getElementById('colCount').value) || 2;
+        const isInvert = document.getElementById('incompleteTop').checked;
+
+        interactArea.style.backgroundColor = bg;
+        interactArea.style.gap = gap + 'px';
+
+        const cards = document.querySelectorAll('.img-card');
+        const total = cards.length;
+
+        cards.forEach(card => {
+            card.style.width = ''; card.style.height = ''; 
+            card.style.margin = ''; card.style.flexShrink = '';
+        });
+
+        if (mode === 'horizontal') {
+            interactArea.style.flexDirection = 'row';
+            interactArea.style.justifyContent = 'flex-start';
+            interactArea.style.flexWrap = 'nowrap';
+            interactArea.style.overflowX = 'auto';
+            cards.forEach(card => {
+                card.style.height = '200px'; card.style.width = 'auto'; card.style.flexShrink = '0';
+            });
+        } else if (mode === 'vertical') {
+            interactArea.style.flexDirection = 'column';
+            interactArea.style.alignItems = 'center';
+            interactArea.style.flexWrap = 'nowrap';
+            cards.forEach(card => {
+                card.style.width = '300px'; card.style.height = 'auto';
+            });
+        } else if (mode === 'grid') {
+            interactArea.style.flexDirection = 'row';
+            interactArea.style.flexWrap = 'wrap';
+            interactArea.style.justifyContent = 'center'; 
+            interactArea.style.overflowX = 'hidden';
+
+            const widthCalc = `calc((100% - ${gap * (colCount - 1)}px) / ${colCount})`;
+            const remainder = total % colCount;
+            let needForceBreak = (isInvert && remainder > 0);
+
+            cards.forEach((card, index) => {
+                card.style.width = widthCalc;
+                card.style.height = 'auto';
+                if (needForceBreak) {
+                    if (index === 0) card.style.marginLeft = `calc(${colCount - remainder} * ((100% + ${gap}px) / ${colCount}) / 2)`;
+                    if (index === remainder - 1) card.style.marginRight = `calc(${colCount - remainder} * ((100% + ${gap}px) / ${colCount}) / 2)`;
+                }
+            });
+        }
+    }
+
+    function generateAndDownload() {
+        if (gfItems.length === 0) return;
+        
+        const imgLoadPromises = gfItems.map(item => {
+            return new Promise((resolve) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.src = item.src;
+            });
+        });
+
+        Promise.all(imgLoadPromises).then(imgObjects => {
+            const mode = document.getElementById('layoutMode').value;
+            const gap = parseInt(document.getElementById('gapSize').value) || 0;
+            const bg = document.getElementById('bgColor').value;
+            const cols = parseInt(document.getElementById('colCount').value);
+            const isInvert = document.getElementById('incompleteTop').checked;
+            const exportFormat = document.getElementById('exportFormat').value;
+            
+            const gfCanvas = document.getElementById('renderCanvas');
+            const gfCtx = gfCanvas.getContext('2d');
+
+            let drawData = [];
+            let canvasW = 0, canvasH = 0;
+
+            if (mode === 'grid') {
+                const maxW = Math.max(...imgObjects.map(img => img.naturalWidth));
+                const colWidth = maxW; 
+                canvasW = (colWidth * cols) + (gap * (cols + 1));
+                
+                let currentY = gap;
+                let currentIdx = 0;
+                const total = imgObjects.length;
+                const remainder = total % cols;
+                let firstRowIsSpecial = (isInvert && remainder > 0);
+
+                while(currentIdx < total) {
+                    let countInRow = cols;
+                    if (currentIdx === 0 && firstRowIsSpecial) countInRow = remainder;
+
+                    const rowImgs = imgObjects.slice(currentIdx, currentIdx + countInRow);
+                    const emptySlots = cols - rowImgs.length;
+                    let offsetX = 0;
+                    if (emptySlots > 0) offsetX = (emptySlots * (colWidth + gap)) / 2;
+                    
+                    const rowDims = rowImgs.map(img => {
+                        const scale = colWidth / img.naturalWidth;
+                        return { w: colWidth, h: img.naturalHeight * scale, img };
+                    });
+                    
+                    const maxRowH = Math.max(...rowDims.map(d => d.h));
+                    
+                    rowDims.forEach((d, idx) => {
+                        const x = gap + (idx * (colWidth + gap)) + offsetX;
+                        drawData.push({ ...d, x, y: currentY });
+                    });
+                    
+                    currentY += maxRowH + gap;
+                    currentIdx += countInRow;
+                }
+                canvasH = currentY;
+
+            } else if (mode === 'horizontal') {
+                const maxHeight = Math.max(...imgObjects.map(img => img.naturalHeight));
+                let currentX = gap;
+                imgObjects.forEach(img => {
+                    const scale = maxHeight / img.naturalHeight;
+                    drawData.push({ img, x: currentX, y: gap, w: img.naturalWidth * scale, h: maxHeight });
+                    currentX += (img.naturalWidth * scale) + gap;
+                });
+                canvasH = maxHeight + gap * 2;
+                canvasW = currentX;
+
+            } else if (mode === 'vertical') {
+                const maxWidth = Math.max(...imgObjects.map(img => img.naturalWidth));
+                let currentY = gap;
+                imgObjects.forEach(img => {
+                    const scale = maxWidth / img.naturalWidth;
+                    drawData.push({ img, x: gap, y: currentY, w: maxWidth, h: img.naturalHeight * scale });
+                    currentY += (img.naturalHeight * scale) + gap;
+                });
+                canvasW = maxWidth + gap * 2;
+                canvasH = currentY;
+            }
+
+            gfCanvas.width = canvasW;
+            gfCanvas.height = canvasH;
+            gfCtx.fillStyle = bg;
+            gfCtx.fillRect(0, 0, canvasW, canvasH);
+            gfCtx.imageSmoothingEnabled = true;
+            gfCtx.imageSmoothingQuality = 'high';
+            
+            drawData.forEach(d => { gfCtx.drawImage(d.img, d.x, d.y, d.w, d.h); });
+
+            const link = document.createElement('a');
+            const ext = exportFormat.split('/')[1];
+            link.download = `Merged_Image_${Date.now()}.${ext}`;
+            link.href = gfCanvas.toDataURL(exportFormat, 0.95);
+            link.click();
+        });
+    }
+
+    // === 6. 刷卡建議邏輯 ===
+    function saveCardSettings() {
+        localStorage.setItem('tool_card1_name', document.getElementById('card1Name').value);
+        localStorage.setItem('tool_card1_date', document.getElementById('card1Date').value);
+        localStorage.setItem('tool_card2_name', document.getElementById('card2Name').value);
+        localStorage.setItem('tool_card2_date', document.getElementById('card2Date').value);
+    }
+    function loadCardSettings() {
+        if (localStorage.getItem('tool_card1_name')) document.getElementById('card1Name').value = localStorage.getItem('tool_card1_name');
+        if (localStorage.getItem('tool_card1_date')) document.getElementById('card1Date').value = localStorage.getItem('tool_card1_date');
+        if (localStorage.getItem('tool_card2_name')) document.getElementById('card2Name').value = localStorage.getItem('tool_card2_name');
+        if (localStorage.getItem('tool_card2_date')) document.getElementById('card2Date').value = localStorage.getItem('tool_card2_date');
+    }
+    function toggleDateLabel() {
+        const type = document.getElementById('chargeType').value;
+        const label = document.getElementById('dateLabel');
+        if (type === 'release') label.innerText = '輸入預計發售日 (系統將自動提前 3 天作預估請款日)：';
+        else label.innerText = '選擇刷卡日期 (預設為今天)：';
+    }
+    function initCardDate() {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const dd = String(today.getDate()).padStart(2, '0');
+        document.getElementById('swipeDate').value = `${yyyy}-${mm}-${dd}`;
+        recommendCard();
+    }
+    function getNextBillDate(currentDate, billDayStr) {
+        let billDay = parseInt(billDayStr) || 1;
+        let y = currentDate.getFullYear();
+        let m = currentDate.getMonth();
+        let d = currentDate.getDate();
+        if (d >= billDay) m += 1;
+        return new Date(y, m, billDay);
+    }
+    function getDaysDiff(currentDate, targetDate) {
+        return Math.ceil((targetDate - currentDate) / (1000 * 60 * 60 * 24));
+    }
+    function recommendCard() {
+        const dateStr = document.getElementById('swipeDate').value;
+        if (!dateStr) return;
+        const type = document.getElementById('chargeType').value;
+        let targetObj = new Date(dateStr);
+        let reasonPrefix = "";
+
+        if (type === 'release') {
+            targetObj.setDate(targetObj.getDate() - 3);
+            const estY = targetObj.getFullYear();
+            const estM = String(targetObj.getMonth() + 1).padStart(2, '0');
+            const estD = String(targetObj.getDate()).padStart(2, '0');
+            reasonPrefix = `⚠️ 此為預購品，系統已將發售日提前 3 天。\n🗓️ 預估實際請款日為：${estY}-${estM}-${estD}\n--------------------------\n`;
+        }
+
+        const c1Name = document.getElementById('card1Name').value || '卡片 A';
+        const c1Date = document.getElementById('card1Date').value || 1;
+        const c2Name = document.getElementById('card2Name').value || '卡片 B';
+        const c2Date = document.getElementById('card2Date').value || 1;
+
+        const c1NextBill = getNextBillDate(targetObj, c1Date);
+        const c2NextBill = getNextBillDate(targetObj, c2Date);
+
+        const c1DaysLeft = getDaysDiff(targetObj, c1NextBill);
+        const c2DaysLeft = getDaysDiff(targetObj, c2NextBill);
+
+        let bestCard = ""; let bestCardColor = "#27ae60"; let reason = "";
+
+        if (c1DaysLeft > c2DaysLeft) {
+            bestCard = c1Name; bestCardColor = "#2980b9"; 
+            reason = `• 【${c1Name}】將於 ${c1NextBill.getMonth()+1}/${c1NextBill.getDate()} 出帳 (約剩 ${c1DaysLeft} 天)。\n• 【${c2Name}】將於 ${c2NextBill.getMonth()+1}/${c2NextBill.getDate()} 出帳 (約剩 ${c2DaysLeft} 天)。\n\n👉 結論：請用【${c1Name}】結帳！`;
+        } else if (c2DaysLeft > c1DaysLeft) {
+            bestCard = c2Name; bestCardColor = "#e67e22"; 
+            reason = `• 【${c1Name}】將於 ${c1NextBill.getMonth()+1}/${c1NextBill.getDate()} 出帳 (約剩 ${c1DaysLeft} 天)。\n• 【${c2Name}】將於 ${c2NextBill.getMonth()+1}/${c2NextBill.getDate()} 出帳 (約剩 ${c2DaysLeft} 天)。\n\n👉 結論：請用【${c2Name}】結帳！`;
+        } else {
+            bestCard = "兩張皆可"; bestCardColor = "#8e44ad"; 
+            reason = `• 兩張卡的預計出帳天數相同 (皆剩約 ${c1DaysLeft} 天)。\n\n👉 結論：刷哪一張都可以！`;
+        }
+
+        document.getElementById('cardResult').innerHTML = `最佳推薦：<span style="color: ${bestCardColor};">${bestCard}</span>`;
+        document.getElementById('cardDetail').innerText = reasonPrefix + reason;
+    }
+
+    // === 7. 外連轉換邏輯 ===
+    async function pasteFromClipboard() {
+        try { const text = await navigator.clipboard.readText(); document.getElementById('linkInput').value = text; convertLink(); } catch (err) { alert('無法讀取剪貼簿，請手動貼上'); }
+    }
     function convertLink() {
         const raw = document.getElementById('linkInput').value.trim();
         let fileId = "";
@@ -886,15 +1209,9 @@
         }
         const output = document.getElementById('linkOutput');
         const copyBtn = document.getElementById('copyLinkBtn');
-        if (fileId) {
-            output.value = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1366`;
-            copyBtn.disabled = false;
-        } else {
-            output.value = "❌ 格式錯誤，請確認是否為圖片分享連結";
-            copyBtn.disabled = true;
-        }
+        if (fileId) { output.value = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1366`; copyBtn.disabled = false; } 
+        else { output.value = "❌ 格式錯誤，請確認是否為圖片分享連結"; copyBtn.disabled = true; }
     }
-
     function copyLink() {
         const copyText = document.getElementById("linkOutput");
         copyText.select(); copyText.setSelectionRange(0, 99999); 
@@ -904,8 +1221,8 @@
         btn.innerText = "✅ 已複製";
         setTimeout(() => btn.innerText = originalText, 1500);
     }
-
     function openPopup() { window.open(window.location.href, "ToolsPopup", "menubar=no,toolbar=no,location=no,status=no"); }
+
 </script>
 
 </body>
