@@ -804,7 +804,7 @@
             case 'rakuten': url = `https://books.rakuten.co.jp/search?sitem=${encoded}`; break;
             case 'wondergoo': url = `https://shinseidowondergoo.com/search?q=${encoded}`; break;
             case 'animate': url = `https://www.animate-onlineshop.jp/products/list.php?mode=search&smt=${encoded}`; break;
-            case 'neowing': url = `https://www.neowing.co.jp/searchs?q=${encoded}`; break;
+            case 'neowing': url = `https://www.neowing.co.jp/searches?term.media_format=&q=${encoded}`; break;
         }
         if (url) window.open(url, '_blank');
     }
@@ -1227,3 +1227,4 @@
 
 </body>
 </html>
+
