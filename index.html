@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>四葉亭上架工具箱</title>
+    <title>四葉亭賣場上架工具箱</title>
     <link rel="shortcut icon" href="icon.ico" type="image/x-icon">
     <style>
         :root {
@@ -300,13 +300,13 @@
     </div>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('pricing')">📊 商品計價</button>
+        <button class="tab-btn active" onclick="switchTab('pricing')">📊 定價</button>
         <button class="tab-btn" onclick="switchTab('calc')">📟 計算機</button>
-        <button class="tab-btn" onclick="switchTab('shop')">🛒 商城外連</button>
+        <button class="tab-btn" onclick="switchTab('shop')">🛒 商城</button>
         <button class="tab-btn" onclick="switchTab('memo')">📝 記事本</button>
-        <button class="tab-btn" onclick="switchTab('gridflow')">🖼️ 圖片合併</button>
-        <button class="tab-btn" onclick="switchTab('card')">💳 刷卡判斷</button>
-        <button class="tab-btn" onclick="switchTab('link')">🔗 圖片外連</button>
+        <button class="tab-btn" onclick="switchTab('gridflow')">🖼️ 拼圖</button>
+        <button class="tab-btn" onclick="switchTab('card')">💳 刷卡</button>
+        <button class="tab-btn" onclick="switchTab('link')">🔗 外連</button>
     </div>
 
     <div id="pricing" class="tab-content active">
@@ -403,19 +403,21 @@
         </div>
         <div class="search-grid">
             <button class="search-btn" style="background-color: #f39c12;" onclick="doSearch('amazon')">🛒 Amazon JP</button>
-            <button class="search-btn" style="background-color: #3498db;" onclick="doSearch('sofmap')">💻 Sofmap</button>
+            <button class="search-btn" style="background-color: #3498db;" onclick="doSearch('sofmap')">💻 SOFMAP</button>
             <button class="search-btn" style="background-color: #2ecc71;" onclick="doSearch('melon')">🍈 Melonbooks</button>
-            <button class="search-btn" style="background-color: #9b59b6;" onclick="doSearch('surugaya')">📦 駿河屋</button>
-            <button class="search-btn" style="background-color: #e74c3c;" onclick="doSearch('booth')">🎨 BOOTH</button>
-            <button class="search-btn" style="background-color: #f1c40f; color: #333;" onclick="doSearch('yahoo')">🔨 日本Yahoo 拍賣</button>
-            <button class="search-btn" style="background-color: #e056fd;" onclick="doSearch('mercari')">🛍️ Mercari</button>
-            <button class="search-btn" style="background-color: #e67e22;" onclick="doSearch('amiami')">🌟 Amiami</button>
-            <button class="search-btn" style="background-color: #34495e;" onclick="doSearch('ebten')">📚 ebten</button>
-            <button class="search-btn" style="background-color: #2980b9;" onclick="doSearch('gamers')">🎮 Gamers</button>
-            <button class="search-btn" style="background-color: #16a085;" onclick="doSearch('trader')">💿 Trader (綜合)</button>
+            <button class="search-btn" style="background-color: #d35400;" onclick="doSearch('getchu')">🔞 Getchu</button>
             <button class="search-btn" style="background-color: #bf0000;" onclick="doSearch('rakuten')">📖 楽天ブックス</button>
-            <button class="search-btn" style="background-color: #2c3e50;" onclick="doSearch('wondergoo')">💿 WonderGOO</button>
+            <button class="search-btn" style="background-color: #9b59b6;" onclick="doSearch('surugaya')">📦 駿河屋</button>
+            <button class="search-btn" style="background-color: #16a085;" onclick="doSearch('trader')">💿 Trader (綜合)</button>
             <button class="search-btn" style="background-color: #004bbb;" onclick="doSearch('animate')">🅰️ アニメイト</button>
+            <button class="search-btn" style="background-color: #2980b9;" onclick="doSearch('gamers')">🎮 Gamers</button>
+            <button class="search-btn" style="background-color: #e67e22;" onclick="doSearch('amiami')">🌟 Amiami</button>
+            <button class="search-btn" style="background-color: #000000;" onclick="doSearch('tora')">🐯 虎之穴</button>
+            <button class="search-btn" style="background-color: #34495e;" onclick="doSearch('ebten')">📚 ebten</button>
+            <button class="search-btn" style="background-color: #2c3e50;" onclick="doSearch('wondergoo')">💿 WonderGOO</button>
+            <button class="search-btn" style="background-color: #e74c3c;" onclick="doSearch('booth')">🎨 BOOTH</button>
+            <button class="search-btn" style="background-color: #f1c40f; color: #333;" onclick="doSearch('yahoo')">🔨 Yahoo 拍賣</button>
+            <button class="search-btn" style="background-color: #e056fd;" onclick="doSearch('mercari')">🛍️ Mercari</button>
             <button class="search-btn" style="background-color: #1abc9c;" onclick="doSearch('neowing')">💿 Neowing</button>
         </div>
     </div>
@@ -430,7 +432,6 @@
             <button class="action-btn" onclick="document.getElementById('fileInput').click()" style="background-color: #10b981; margin-bottom:0;">📷 點擊上傳商品圖片 (可多選)</button>
             <input type="file" id="fileInput" multiple accept="image/*" style="display: none;">
         </div>
-
         <div style="display: flex; gap: 10px;">
             <div class="form-group" style="flex: 1;">
                 <label>排列模式</label>
@@ -445,14 +446,12 @@
                 <input type="number" id="colCount" value="2" min="1" max="10">
             </div>
         </div>
-
         <div class="form-group" id="gridInvertSetting" style="background: #f1f5f9; padding: 10px; border-radius: 4px;">
             <label style="display: flex; align-items: center; gap: 8px; margin: 0; cursor: pointer; font-weight: normal;">
                 <input type="checkbox" id="incompleteTop" style="width: auto;">
                 <span>將未滿的排置頂 (倒金字塔)</span>
             </label>
         </div>
-
         <div style="display: flex; gap: 10px;">
             <div class="form-group" style="flex: 1;">
                 <label>間距 (px)</label>
@@ -471,12 +470,10 @@
                 </select>
             </div>
         </div>
-
         <div style="display: flex; gap: 10px;">
             <button id="downloadBtn" class="action-btn" disabled>⬇️ 下載合併圖片</button>
             <button id="clearImgBtn" class="action-btn secondary">🗑️ 清空畫布</button>
         </div>
-
         <div id="interactive-area" class="gf-workspace"></div>
         <canvas id="renderCanvas" style="display:none;"></canvas>
     </div>
@@ -546,7 +543,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // 工具箱初始化
         loadRate();
         updatePricingFields();
         setupEnterKeyBindings();
@@ -572,11 +568,9 @@
             });
         }
 
-        // 初始化 GridFlow
         initGridFlow();
     });
 
-    // === 核心：分頁切換邏輯 (已對應最新排序) ===
     function switchTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -586,7 +580,7 @@
         document.querySelectorAll('.tab-btn')[index].classList.add('active');
     }
 
-    // === 1. 定價計算器邏輯 ===
+    // === 定價計算邏輯 ===
     function setupEnterKeyBindings() {
         const inputs = ['jpyInput', 'jpShipInput', 'rateInput', 'shipInput'];
         inputs.forEach(id => {
@@ -628,11 +622,8 @@
         document.getElementById('shipGroup').style.display = showShip ? 'block' : 'none';
 
         const rateInput = document.getElementById('rateInput');
-        if (mode === 2) { 
-            rateInput.placeholder = "請輸入含利潤的匯率/係數 (e.g., 0.23)";
-        } else {
-            rateInput.placeholder = "目前匯率 (e.g., 4.5)";
-        }
+        if (mode === 2) rateInput.placeholder = "請輸入含利潤的匯率/係數 (e.g., 0.23)";
+        else rateInput.placeholder = "目前匯率 (e.g., 4.5)";
     }
 
     function loadRate() {
@@ -687,28 +678,22 @@
     }
     function clearHistory() { document.getElementById('pricingHistory').innerHTML = ''; }
 
-    // === 2. 計算機邏輯 ===
+    // === 計算機邏輯 ===
     let calcExpr = ""; let calcLastRes = "";
     function calcInput(key) {
         const display = document.getElementById('calcResult');
         const exprDisplay = document.getElementById('calcExpr');
-
-        if (key === 'AC') {
-            calcExpr = ""; calcLastRes = ""; display.innerText = "0"; exprDisplay.innerText = "";
-        } else if (key === 'DEL') {
-            calcExpr = calcExpr.slice(0, -1); display.innerText = calcExpr || "0";
-        } else if (key === '=') {
+        if (key === 'AC') { calcExpr = ""; calcLastRes = ""; display.innerText = "0"; exprDisplay.innerText = ""; } 
+        else if (key === 'DEL') { calcExpr = calcExpr.slice(0, -1); display.innerText = calcExpr || "0"; } 
+        else if (key === '=') {
             try {
                 if (calcLastRes && !/^[\d\.]/.test(calcExpr)) calcExpr = calcLastRes + calcExpr;
                 let sanitizedExpr = calcExpr.replace(/×/g, '*').replace(/÷/g, '/');
                 if (!sanitizedExpr || !/^[\d\(]/.test(sanitizedExpr)) throw new Error('Invalid start');
-
                 const operators = sanitizedExpr.match(/[\+\-\*\/]/g);
                 const operands = sanitizedExpr.split(/[\+\-\*\/]/).map(Number); 
-
                 if (!operators || operands.length !== operators.length + 1) {
                     if (operators && operands.length === operators.length) throw new Error('Incomplete expression');
-                    if (sanitizedExpr.includes('(') || sanitizedExpr.includes(')')) throw new Error('Brackets not supported in simple mode');
                     let fallbackResult = eval(sanitizedExpr);
                     if (isNaN(fallbackResult) || !isFinite(fallbackResult)) throw new Error('Fallback eval failed');
                     var result = fallbackResult;
@@ -723,36 +708,25 @@
                     }
                 }
                 const finalResult = Math.round(result * 100) / 100;
-                calcLastRes = finalResult.toString();
-                display.innerText = finalResult; exprDisplay.innerText = calcExpr + " ="; calcExpr = "";
+                calcLastRes = finalResult.toString(); display.innerText = finalResult; exprDisplay.innerText = calcExpr + " ="; calcExpr = "";
             } catch (error) { display.innerText = "Error"; exprDisplay.innerText = calcExpr + " ="; calcExpr = ""; }
         } else {
             if (['+','-','*','/'].includes(key) && calcExpr === "" && calcLastRes !== "") calcExpr = calcLastRes;
             calcExpr += key; display.innerText = calcExpr;
         }
     }
-    document.addEventListener('keydown', function(event) {
-        if (!document.getElementById('calc').classList.contains('active')) return;
-        const key = event.key;
-        if (/[0-9\.\+\-\*\/\(\)]/.test(key)) calcInput(key.replace('*','×').replace('/','÷'));
-        else if (key === 'Enter') { calcInput('='); event.preventDefault(); }
-        else if (key === 'Backspace') calcInput('DEL');
-        else if (key === 'Escape') calcInput('AC');
-    });
 
-    // === 3. 商城捷徑與搜尋邏輯 ===
+    // === 商城與搜尋邏輯 ===
     function openShop() {
         const shop = document.getElementById('shopSelector').value;
         const input = document.getElementById('shopInput').value.trim();
         if (!input) { alert('請先輸入商品編號或網址！'); return; }
-
         let finalId = "";
         if (shop === 'melon') { const match = input.match(/product_id=(\d+)/); finalId = match ? match[1] : input.replace(/\D/g, ''); }
         else if (shop === 'surugaya') { const match = input.match(/detail\/([a-zA-Z0-9_-]+)/); finalId = match ? match[1] : input.replace(/[^a-zA-Z0-9_-]/g, ''); }
         else if (shop === 'booth') { const match = input.match(/items\/(\d+)/); finalId = match ? match[1] : input.replace(/\D/g, ''); }
         else if (shop === 'yahoo') { const match = input.match(/auction\/([a-zA-Z0-9_-]+)/); finalId = match ? match[1] : input.replace(/[^a-zA-Z0-9_-]/g, ''); }
         else if (shop === 'mercari') { const match = input.match(/item\/([a-zA-Z0-9_-]+)/); finalId = match ? match[1] : input.replace(/[^a-zA-Z0-9_-]/g, ''); }
-
         if (finalId) {
             let url = "";
             if (shop === 'melon') url = `https://www.melonbooks.co.jp/detail/detail.php?product_id=${finalId}`;
@@ -762,7 +736,7 @@
             else if (shop === 'mercari') url = `https://jp.mercari.com/item/${finalId}`;
             window.open(url, '_blank');
             document.getElementById('shopInput').value = '';
-        } else { alert('無法辨識商品編號，請確認後重新輸入！'); }
+        } else alert('無法辨識商品編號，請確認後重新輸入！');
     }
 
     async function pasteToShopInput() {
@@ -773,19 +747,20 @@
         const keyword = document.getElementById('searchKeyword').value.trim();
         if (!keyword) { alert('請先輸入搜尋關鍵字！'); return; }
 
-        if (platform === 'sofmap') {
+        if (platform === 'sofmap' || platform === 'trader' || platform === 'getchu') {
             const form = document.createElement('form');
-            form.method = 'GET'; form.action = 'https://a.sofmap.com/search_result.aspx'; form.target = '_blank'; form.acceptCharset = 'Shift_JIS';
-            const input = document.createElement('input'); input.type = 'hidden'; input.name = 'keyword'; input.value = keyword;
-            form.appendChild(input); document.body.appendChild(form); form.submit(); document.body.removeChild(form);
-            return;
-        }
-
-        if (platform === 'trader') {
-            const form = document.createElement('form');
-            form.method = 'GET'; form.action = 'https://www.trader.co.jp/shop/shopbrand.html'; form.target = '_blank'; form.acceptCharset = 'EUC-JP';
-            const input = document.createElement('input'); input.type = 'hidden'; input.name = 'search'; input.value = keyword;
-            form.appendChild(input); document.body.appendChild(form); form.submit(); document.body.removeChild(form);
+            form.method = 'GET'; form.target = '_blank';
+            if (platform === 'sofmap') {
+                form.action = 'https://a.sofmap.com/search_result.aspx'; form.acceptCharset = 'Shift_JIS';
+                const input = document.createElement('input'); input.type = 'hidden'; input.name = 'keyword'; input.value = keyword; form.appendChild(input);
+            } else if (platform === 'trader') {
+                form.action = 'https://www.trader.co.jp/shop/shopbrand.html'; form.acceptCharset = 'EUC-JP';
+                const input = document.createElement('input'); input.type = 'hidden'; input.name = 'search'; input.value = keyword; form.appendChild(input);
+            } else if (platform === 'getchu') {
+                form.action = 'http://www.getchu.com/php/search.phtml'; form.acceptCharset = 'EUC-JP';
+                const input = document.createElement('input'); input.type = 'hidden'; input.name = 'search_keyword'; input.value = keyword; form.appendChild(input);
+            }
+            document.body.appendChild(form); form.submit(); document.body.removeChild(form);
             return;
         }
 
@@ -805,316 +780,150 @@
             case 'wondergoo': url = `https://shinseidowondergoo.com/search?q=${encoded}`; break;
             case 'animate': url = `https://www.animate-onlineshop.jp/products/list.php?mode=search&smt=${encoded}`; break;
             case 'neowing': url = `https://www.neowing.co.jp/searches?term.media_format=&q=${encoded}`; break;
+            case 'tora': url = `https://ec.toranoana.jp/tora_r/ec/app/catalog/list?searchWord=${encoded}`; break;
         }
         if (url) window.open(url, '_blank');
     }
 
-    // === 4. 記事本邏輯 ===
+    // === 記事本邏輯 ===
     const memoArea = document.getElementById('memoArea');
     if (localStorage.getItem('tool_memo')) memoArea.value = localStorage.getItem('tool_memo');
     memoArea.addEventListener('input', function() { localStorage.setItem('tool_memo', this.value); });
     function clearMemo() { if(confirm('確定要清空記事嗎？')) { memoArea.value = ''; localStorage.removeItem('tool_memo'); } }
 
-    // === 5. GridFlow 圖片合併邏輯 ===
-    let gfItems = []; 
-    let gfDraggedItem = null;
-
+    // === GridFlow 圖片合併邏輯 ===
+    let gfItems = []; let gfDraggedItem = null;
     function initGridFlow() {
         const gfFileInput = document.getElementById('fileInput');
-        const layoutModeSelect = document.getElementById('layoutMode');
-        const colCountInput = document.getElementById('colCount');
-        const incompleteTopInput = document.getElementById('incompleteTop');
-        const gapSizeInput = document.getElementById('gapSize');
-        const bgColorInput = document.getElementById('bgColor');
+        const lmode = document.getElementById('layoutMode');
+        const ccount = document.getElementById('colCount');
+        const itop = document.getElementById('incompleteTop');
+        const gsize = document.getElementById('gapSize');
+        const bcolor = document.getElementById('bgColor');
         const dlBtn = document.getElementById('downloadBtn');
         const clrBtn = document.getElementById('clearImgBtn');
-        const gridSet = document.getElementById('gridSettings');
-        const gridInvSet = document.getElementById('gridInvertSetting');
         const interactArea = document.getElementById('interactive-area');
-
-        if (!gfFileInput) return;
-
-        gfFileInput.addEventListener('change', handleUpload);
-        
-        [layoutModeSelect, colCountInput, incompleteTopInput, gapSizeInput, bgColorInput].forEach(el => {
-            el.addEventListener('input', updateLayoutVisuals);
-            el.addEventListener('change', updateLayoutVisuals);
+        gfFileInput.addEventListener('change', async (e) => {
+            if (!e.target.files.length) return;
+            const files = Array.from(e.target.files);
+            const promises = files.map(file => new Promise((res, rej) => {
+                const r = new FileReader(); r.onload = (evt) => res({ id: Math.random().toString(36).substr(2, 9), src: evt.target.result });
+                r.onerror = rej; r.readAsDataURL(file);
+            }));
+            gfItems = [...gfItems, ...await Promise.all(promises)]; renderInteractiveArea(); gfFileInput.value = '';
         });
-
-        layoutModeSelect.addEventListener('change', () => {
-            if(layoutModeSelect.value === 'grid') {
-                gridSet.style.display = 'block';
-                gridInvSet.style.display = 'block';
-            } else {
-                gridSet.style.display = 'none';
-                gridInvSet.style.display = 'none';
-            }
+        [lmode, ccount, itop, gsize, bcolor].forEach(el => el.addEventListener('input', updateLayoutVisuals));
+        lmode.addEventListener('change', () => {
+            const isGrid = lmode.value === 'grid';
+            document.getElementById('gridSettings').style.display = isGrid ? 'block' : 'none';
+            document.getElementById('gridInvertSetting').style.display = isGrid ? 'block' : 'none';
         });
-
-        clrBtn.addEventListener('click', () => {
-            gfItems = [];
-            renderInteractiveArea();
-            gfFileInput.value = '';
-        });
-
+        clrBtn.addEventListener('click', () => { gfItems = []; renderInteractiveArea(); });
         dlBtn.addEventListener('click', generateAndDownload);
-
         interactArea.addEventListener('dragover', (e) => {
-            e.preventDefault(); 
-            if (!gfDraggedItem) return;
-            const targetCard = e.target.closest('.img-card');
-            if (targetCard && targetCard !== gfDraggedItem) {
+            e.preventDefault(); if (!gfDraggedItem) return;
+            const target = e.target.closest('.img-card');
+            if (target && target !== gfDraggedItem) {
                 const children = Array.from(interactArea.children);
-                const draggedIdx = children.indexOf(gfDraggedItem);
-                const targetIdx = children.indexOf(targetCard);
-                if (draggedIdx < targetIdx) targetCard.after(gfDraggedItem);
-                else targetCard.before(gfDraggedItem);
-                setTimeout(updateLayoutVisuals, 0); 
+                const di = children.indexOf(gfDraggedItem); const ti = children.indexOf(target);
+                if (di < ti) target.after(gfDraggedItem); else target.before(gfDraggedItem);
+                setTimeout(updateLayoutVisuals, 0);
             }
         });
-    }
-
-    async function handleUpload(e) {
-        if (!e.target.files || e.target.files.length === 0) return;
-        const files = Array.from(e.target.files);
-        try {
-            const promises = files.map(file => {
-                return new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = (evt) => {
-                        resolve({ id: Math.random().toString(36).substr(2, 9), src: evt.target.result });
-                    };
-                    reader.onerror = () => reject('圖片讀取失敗');
-                    reader.readAsDataURL(file);
-                });
-            });
-            const newItems = await Promise.all(promises);
-            gfItems = [...gfItems, ...newItems];
-            renderInteractiveArea();
-        } catch (err) { alert('部分圖片上傳失敗'); } 
-        finally { document.getElementById('fileInput').value = ''; }
     }
 
     function renderInteractiveArea() {
-        const interactArea = document.getElementById('interactive-area');
-        const dlBtn = document.getElementById('downloadBtn');
-        interactArea.innerHTML = '';
-
-        if (gfItems.length === 0) {
-            interactArea.innerHTML = '<p style="color:#aaa; width:100%; text-align:center; padding-top:100px; pointer-events: none;">拖曳或點擊上方按鈕上傳圖片</p>';
-            dlBtn.disabled = true;
-            return;
-        }
-        dlBtn.disabled = false;
-
-        gfItems.forEach((item) => {
-            const card = document.createElement('div');
-            card.className = 'img-card';
-            card.draggable = true;
-            card.dataset.id = item.id;
-            
-            const delBtn = document.createElement('div');
-            delBtn.className = 'delete-btn';
-            delBtn.innerHTML = '×';
-            delBtn.onclick = (e) => {
-                e.stopPropagation();
-                gfItems = gfItems.filter(i => i.id !== item.id);
-                renderInteractiveArea();
-            };
-            
-            const img = document.createElement('img');
-            img.src = item.src;
-            
-            card.appendChild(img);
-            card.appendChild(delBtn);
-            
-            card.addEventListener('dragstart', function(e) {
-                gfDraggedItem = this;
-                setTimeout(() => this.classList.add('dragging'), 0);
-            });
-
-            card.addEventListener('dragend', function() {
-                this.classList.remove('dragging');
-                gfDraggedItem = null;
-                synchronizeItems(); 
-                updateLayoutVisuals();
-            });
-
-            interactArea.appendChild(card);
+        const area = document.getElementById('interactive-area');
+        const btn = document.getElementById('downloadBtn');
+        area.innerHTML = '';
+        if (!gfItems.length) { area.innerHTML = '<p style="color:#aaa; width:100%; text-align:center; padding-top:100px;">點擊上方按鈕上傳圖片</p>'; btn.disabled = true; return; }
+        btn.disabled = false;
+        gfItems.forEach(item => {
+            const card = document.createElement('div'); card.className = 'img-card'; card.draggable = true; card.dataset.id = item.id;
+            const del = document.createElement('div'); del.className = 'delete-btn'; del.innerHTML = '×';
+            del.onclick = (e) => { e.stopPropagation(); gfItems = gfItems.filter(i => i.id !== item.id); renderInteractiveArea(); };
+            const img = document.createElement('img'); img.src = item.src;
+            card.appendChild(img); card.appendChild(del);
+            card.addEventListener('dragstart', function() { gfDraggedItem = this; setTimeout(() => this.classList.add('dragging'), 0); });
+            card.addEventListener('dragend', function() { this.classList.remove('dragging'); gfDraggedItem = null; synchronizeItems(); updateLayoutVisuals(); });
+            area.appendChild(card);
         });
         updateLayoutVisuals();
     }
 
     function synchronizeItems() {
-        const interactArea = document.getElementById('interactive-area');
-        const currentCards = Array.from(interactArea.querySelectorAll('.img-card'));
-        const newItems = [];
-        currentCards.forEach(card => {
-            const id = card.dataset.id;
-            const item = gfItems.find(i => i.id === id);
-            if (item) newItems.push(item);
-        });
-        gfItems = newItems;
+        const currentCards = Array.from(document.getElementById('interactive-area').querySelectorAll('.img-card'));
+        gfItems = currentCards.map(card => gfItems.find(i => i.id === card.dataset.id)).filter(Boolean);
     }
 
     function updateLayoutVisuals() {
-        const interactArea = document.getElementById('interactive-area');
+        const area = document.getElementById('interactive-area');
         const mode = document.getElementById('layoutMode').value;
         const gap = parseInt(document.getElementById('gapSize').value) || 0;
         const bg = document.getElementById('bgColor').value;
-        const colCount = parseInt(document.getElementById('colCount').value) || 2;
-        const isInvert = document.getElementById('incompleteTop').checked;
-
-        interactArea.style.backgroundColor = bg;
-        interactArea.style.gap = gap + 'px';
-
-        const cards = document.querySelectorAll('.img-card');
-        const total = cards.length;
-
-        cards.forEach(card => {
-            card.style.width = ''; card.style.height = ''; 
-            card.style.margin = ''; card.style.flexShrink = '';
-        });
-
-        if (mode === 'horizontal') {
-            interactArea.style.flexDirection = 'row';
-            interactArea.style.justifyContent = 'flex-start';
-            interactArea.style.flexWrap = 'nowrap';
-            interactArea.style.overflowX = 'auto';
-            cards.forEach(card => {
-                card.style.height = '200px'; card.style.width = 'auto'; card.style.flexShrink = '0';
-            });
-        } else if (mode === 'vertical') {
-            interactArea.style.flexDirection = 'column';
-            interactArea.style.alignItems = 'center';
-            interactArea.style.flexWrap = 'nowrap';
-            cards.forEach(card => {
-                card.style.width = '300px'; card.style.height = 'auto';
-            });
-        } else if (mode === 'grid') {
-            interactArea.style.flexDirection = 'row';
-            interactArea.style.flexWrap = 'wrap';
-            interactArea.style.justifyContent = 'center'; 
-            interactArea.style.overflowX = 'hidden';
-
-            const widthCalc = `calc((100% - ${gap * (colCount - 1)}px) / ${colCount})`;
-            const remainder = total % colCount;
-            let needForceBreak = (isInvert && remainder > 0);
-
-            cards.forEach((card, index) => {
-                card.style.width = widthCalc;
-                card.style.height = 'auto';
-                if (needForceBreak) {
-                    if (index === 0) card.style.marginLeft = `calc(${colCount - remainder} * ((100% + ${gap}px) / ${colCount}) / 2)`;
-                    if (index === remainder - 1) card.style.marginRight = `calc(${colCount - remainder} * ((100% + ${gap}px) / ${colCount}) / 2)`;
+        const cols = parseInt(document.getElementById('colCount').value) || 2;
+        const itop = document.getElementById('incompleteTop').checked;
+        area.style.backgroundColor = bg; area.style.gap = gap + 'px';
+        const cards = area.querySelectorAll('.img-card');
+        cards.forEach(c => { c.style.width = ''; c.style.height = ''; c.style.margin = ''; c.style.flexShrink = ''; });
+        if (mode === 'horizontal') { area.style.flexDirection = 'row'; area.style.justifyContent = 'flex-start'; area.style.flexWrap = 'nowrap'; cards.forEach(c => { c.style.height = '200px'; c.style.width = 'auto'; c.style.flexShrink = '0'; }); }
+        else if (mode === 'vertical') { area.style.flexDirection = 'column'; area.style.alignItems = 'center'; area.style.flexWrap = 'nowrap'; cards.forEach(c => { c.style.width = '300px'; c.style.height = 'auto'; }); }
+        else if (mode === 'grid') {
+            area.style.flexDirection = 'row'; area.style.flexWrap = 'wrap'; area.style.justifyContent = 'center';
+            const width = `calc((100% - ${gap * (cols - 1)}px) / ${cols})`;
+            const rem = cards.length % cols; const special = itop && rem > 0;
+            cards.forEach((c, i) => {
+                c.style.width = width; c.style.height = 'auto';
+                if (special) {
+                    if (i === 0) c.style.marginLeft = `calc(${cols - rem} * ((100% + ${gap}px) / ${cols}) / 2)`;
+                    if (i === rem - 1) c.style.marginRight = `calc(${cols - rem} * ((100% + ${gap}px) / ${cols}) / 2)`;
                 }
             });
         }
     }
 
     function generateAndDownload() {
-        if (gfItems.length === 0) return;
-        
-        const imgLoadPromises = gfItems.map(item => {
-            return new Promise((resolve) => {
-                const img = new Image();
-                img.onload = () => resolve(img);
-                img.src = item.src;
-            });
-        });
-
-        Promise.all(imgLoadPromises).then(imgObjects => {
+        const promises = gfItems.map(item => new Promise(res => { const img = new Image(); img.onload = () => res(img); img.src = item.src; }));
+        Promise.all(promises).then(imgs => {
             const mode = document.getElementById('layoutMode').value;
             const gap = parseInt(document.getElementById('gapSize').value) || 0;
             const bg = document.getElementById('bgColor').value;
             const cols = parseInt(document.getElementById('colCount').value);
-            const isInvert = document.getElementById('incompleteTop').checked;
-            const exportFormat = document.getElementById('exportFormat').value;
-            
-            const gfCanvas = document.getElementById('renderCanvas');
-            const gfCtx = gfCanvas.getContext('2d');
-
-            let drawData = [];
-            let canvasW = 0, canvasH = 0;
-
+            const itop = document.getElementById('incompleteTop').checked;
+            const format = document.getElementById('exportFormat').value;
+            const gfCanvas = document.getElementById('renderCanvas'); const gfCtx = gfCanvas.getContext('2d');
+            let data = []; let cW = 0, cH = 0;
             if (mode === 'grid') {
-                const maxW = Math.max(...imgObjects.map(img => img.naturalWidth));
-                const colWidth = maxW; 
-                canvasW = (colWidth * cols) + (gap * (cols + 1));
-                
-                let currentY = gap;
-                let currentIdx = 0;
-                const total = imgObjects.length;
-                const remainder = total % cols;
-                let firstRowIsSpecial = (isInvert && remainder > 0);
-
-                while(currentIdx < total) {
-                    let countInRow = cols;
-                    if (currentIdx === 0 && firstRowIsSpecial) countInRow = remainder;
-
-                    const rowImgs = imgObjects.slice(currentIdx, currentIdx + countInRow);
-                    const emptySlots = cols - rowImgs.length;
-                    let offsetX = 0;
-                    if (emptySlots > 0) offsetX = (emptySlots * (colWidth + gap)) / 2;
-                    
-                    const rowDims = rowImgs.map(img => {
-                        const scale = colWidth / img.naturalWidth;
-                        return { w: colWidth, h: img.naturalHeight * scale, img };
-                    });
-                    
-                    const maxRowH = Math.max(...rowDims.map(d => d.h));
-                    
-                    rowDims.forEach((d, idx) => {
-                        const x = gap + (idx * (colWidth + gap)) + offsetX;
-                        drawData.push({ ...d, x, y: currentY });
-                    });
-                    
-                    currentY += maxRowH + gap;
-                    currentIdx += countInRow;
+                const colW = Math.max(...imgs.map(i => i.naturalWidth));
+                cW = (colW * cols) + (gap * (cols + 1));
+                let cY = gap; let cIdx = 0; const rem = imgs.length % cols;
+                while (cIdx < imgs.length) {
+                    let count = cols; if (cIdx === 0 && itop && rem > 0) count = rem;
+                    const row = imgs.slice(cIdx, cIdx + count);
+                    const offset = (cols - row.length) * (colW + gap) / 2;
+                    const dims = row.map(img => ({ w: colW, h: img.naturalHeight * (colW / img.naturalWidth), img }));
+                    const maxH = Math.max(...dims.map(d => d.h));
+                    dims.forEach((d, i) => data.push({ ...d, x: gap + (i * (colW + gap)) + offset, y: cY }));
+                    cY += maxH + gap; cIdx += count;
                 }
-                canvasH = currentY;
-
+                cH = cY;
             } else if (mode === 'horizontal') {
-                const maxHeight = Math.max(...imgObjects.map(img => img.naturalHeight));
-                let currentX = gap;
-                imgObjects.forEach(img => {
-                    const scale = maxHeight / img.naturalHeight;
-                    drawData.push({ img, x: currentX, y: gap, w: img.naturalWidth * scale, h: maxHeight });
-                    currentX += (img.naturalWidth * scale) + gap;
-                });
-                canvasH = maxHeight + gap * 2;
-                canvasW = currentX;
-
+                const maxH = Math.max(...imgs.map(i => i.naturalHeight)); let cX = gap;
+                imgs.forEach(img => { const w = img.naturalWidth * (maxH / img.naturalHeight); data.push({ img, x: cX, y: gap, w, h: maxH }); cX += w + gap; });
+                cH = maxH + gap * 2; cW = cX;
             } else if (mode === 'vertical') {
-                const maxWidth = Math.max(...imgObjects.map(img => img.naturalWidth));
-                let currentY = gap;
-                imgObjects.forEach(img => {
-                    const scale = maxWidth / img.naturalWidth;
-                    drawData.push({ img, x: gap, y: currentY, w: maxWidth, h: img.naturalHeight * scale });
-                    currentY += (img.naturalHeight * scale) + gap;
-                });
-                canvasW = maxWidth + gap * 2;
-                canvasH = currentY;
+                const maxW = Math.max(...imgs.map(i => i.naturalWidth)); let cY = gap;
+                imgs.forEach(img => { const h = img.naturalHeight * (maxW / img.naturalWidth); data.push({ img, x: gap, y: cY, w: maxW, h }); cY += h + gap; });
+                cW = maxW + gap * 2; cH = cY;
             }
-
-            gfCanvas.width = canvasW;
-            gfCanvas.height = canvasH;
-            gfCtx.fillStyle = bg;
-            gfCtx.fillRect(0, 0, canvasW, canvasH);
-            gfCtx.imageSmoothingEnabled = true;
-            gfCtx.imageSmoothingQuality = 'high';
-            
-            drawData.forEach(d => { gfCtx.drawImage(d.img, d.x, d.y, d.w, d.h); });
-
-            const link = document.createElement('a');
-            const ext = exportFormat.split('/')[1];
-            link.download = `Merged_Image_${Date.now()}.${ext}`;
-            link.href = gfCanvas.toDataURL(exportFormat, 0.95);
-            link.click();
+            gfCanvas.width = cW; gfCanvas.height = cH; gfCtx.fillStyle = bg; gfCtx.fillRect(0, 0, cW, cH);
+            data.forEach(d => gfCtx.drawImage(d.img, d.x, d.y, d.w, d.h));
+            const link = document.createElement('a'); link.download = `Merged_${Date.now()}.${format.split('/')[1]}`;
+            link.href = gfCanvas.toDataURL(format, 0.95); link.click();
         });
     }
 
-    // === 6. 刷卡建議邏輯 ===
+    // === 刷卡建議邏輯 ===
     function saveCardSettings() {
         localStorage.setItem('tool_card1_name', document.getElementById('card1Name').value);
         localStorage.setItem('tool_card1_date', document.getElementById('card1Date').value);
@@ -1128,103 +937,51 @@
         if (localStorage.getItem('tool_card2_date')) document.getElementById('card2Date').value = localStorage.getItem('tool_card2_date');
     }
     function toggleDateLabel() {
-        const type = document.getElementById('chargeType').value;
-        const label = document.getElementById('dateLabel');
-        if (type === 'release') label.innerText = '輸入預計發售日 (系統將自動提前 3 天作預估請款日)：';
-        else label.innerText = '選擇刷卡日期 (預設為今天)：';
+        const release = document.getElementById('chargeType').value === 'release';
+        document.getElementById('dateLabel').innerText = release ? '輸入預計發售日 (系統將自動提前 3 天作預估請款日)：' : '選擇刷卡日期 (預設為今天)：';
     }
     function initCardDate() {
         const today = new Date();
-        const yyyy = today.getFullYear();
-        const mm = String(today.getMonth() + 1).padStart(2, '0');
-        const dd = String(today.getDate()).padStart(2, '0');
-        document.getElementById('swipeDate').value = `${yyyy}-${mm}-${dd}`;
+        document.getElementById('swipeDate').value = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
         recommendCard();
     }
-    function getNextBillDate(currentDate, billDayStr) {
-        let billDay = parseInt(billDayStr) || 1;
-        let y = currentDate.getFullYear();
-        let m = currentDate.getMonth();
-        let d = currentDate.getDate();
-        if (d >= billDay) m += 1;
-        return new Date(y, m, billDay);
-    }
-    function getDaysDiff(currentDate, targetDate) {
-        return Math.ceil((targetDate - currentDate) / (1000 * 60 * 60 * 24));
-    }
     function recommendCard() {
-        const dateStr = document.getElementById('swipeDate').value;
-        if (!dateStr) return;
-        const type = document.getElementById('chargeType').value;
-        let targetObj = new Date(dateStr);
-        let reasonPrefix = "";
-
-        if (type === 'release') {
-            targetObj.setDate(targetObj.getDate() - 3);
-            const estY = targetObj.getFullYear();
-            const estM = String(targetObj.getMonth() + 1).padStart(2, '0');
-            const estD = String(targetObj.getDate()).padStart(2, '0');
-            reasonPrefix = `⚠️ 此為預購品，系統已將發售日提前 3 天。\n🗓️ 預估實際請款日為：${estY}-${estM}-${estD}\n--------------------------\n`;
+        const dateStr = document.getElementById('swipeDate').value; if (!dateStr) return;
+        const release = document.getElementById('chargeType').value === 'release';
+        let target = new Date(dateStr); let prefix = "";
+        if (release) {
+            target.setDate(target.getDate() - 3);
+            prefix = `⚠️ 預購品，系統已提前 3 天。\n🗓️ 預估請款日：${target.getFullYear()}-${String(target.getMonth()+1).padStart(2,'0')}-${String(target.getDate()).padStart(2,'0')}\n---\n`;
         }
-
-        const c1Name = document.getElementById('card1Name').value || '卡片 A';
-        const c1Date = document.getElementById('card1Date').value || 1;
-        const c2Name = document.getElementById('card2Name').value || '卡片 B';
-        const c2Date = document.getElementById('card2Date').value || 1;
-
-        const c1NextBill = getNextBillDate(targetObj, c1Date);
-        const c2NextBill = getNextBillDate(targetObj, c2Date);
-
-        const c1DaysLeft = getDaysDiff(targetObj, c1NextBill);
-        const c2DaysLeft = getDaysDiff(targetObj, c2NextBill);
-
-        let bestCard = ""; let bestCardColor = "#27ae60"; let reason = "";
-
-        if (c1DaysLeft > c2DaysLeft) {
-            bestCard = c1Name; bestCardColor = "#2980b9"; 
-            reason = `• 【${c1Name}】將於 ${c1NextBill.getMonth()+1}/${c1NextBill.getDate()} 出帳 (約剩 ${c1DaysLeft} 天)。\n• 【${c2Name}】將於 ${c2NextBill.getMonth()+1}/${c2NextBill.getDate()} 出帳 (約剩 ${c2DaysLeft} 天)。\n\n👉 結論：請用【${c1Name}】結帳！`;
-        } else if (c2DaysLeft > c1DaysLeft) {
-            bestCard = c2Name; bestCardColor = "#e67e22"; 
-            reason = `• 【${c1Name}】將於 ${c1NextBill.getMonth()+1}/${c1NextBill.getDate()} 出帳 (約剩 ${c1DaysLeft} 天)。\n• 【${c2Name}】將於 ${c2NextBill.getMonth()+1}/${c2NextBill.getDate()} 出帳 (約剩 ${c2DaysLeft} 天)。\n\n👉 結論：請用【${c2Name}】結帳！`;
-        } else {
-            bestCard = "兩張皆可"; bestCardColor = "#8e44ad"; 
-            reason = `• 兩張卡的預計出帳天數相同 (皆剩約 ${c1DaysLeft} 天)。\n\n👉 結論：刷哪一張都可以！`;
-        }
-
-        document.getElementById('cardResult').innerHTML = `最佳推薦：<span style="color: ${bestCardColor};">${bestCard}</span>`;
-        document.getElementById('cardDetail').innerText = reasonPrefix + reason;
+        const c1n = document.getElementById('card1Name').value || '卡片A'; const c1d = parseInt(document.getElementById('card1Date').value) || 1;
+        const c2n = document.getElementById('card2Name').value || '卡片B'; const c2d = parseInt(document.getElementById('card2Date').value) || 23;
+        const getNextBill = (curr, day) => { let b = new Date(curr.getFullYear(), curr.getMonth(), day); if (curr.getDate() >= day) b.setMonth(b.getMonth() + 1); return b; };
+        const b1 = getNextBill(target, c1d); const b2 = getNextBill(target, c2d);
+        const diff1 = Math.ceil((b1 - target) / 86400000); const diff2 = Math.ceil((b2 - target) / 86400000);
+        let best = "", color = "#27ae60", reason = "";
+        if (diff1 > diff2) { best = c1n; color = "#2980b9"; reason = `• ${c1n}: ${b1.getMonth()+1}/${b1.getDate()} (${diff1}天)\n• ${c2n}: ${b2.getMonth()+1}/${b2.getDate()} (${diff2}天)\n👉 刷【${c1n}】最划算！`; }
+        else if (diff2 > diff1) { best = c2n; color = "#e67e22"; reason = `• ${c1n}: ${b1.getMonth()+1}/${b1.getDate()} (${diff1}天)\n• ${c2n}: ${b2.getMonth()+1}/${b2.getDate()} (${diff2}天)\n👉 刷【${c2n}】最划算！`; }
+        else { best = "皆可"; color = "#8e44ad"; reason = `• 兩張卡剩餘天數相同 (${diff1}天)\n👉 刷哪張都可以！`; }
+        document.getElementById('cardResult').innerHTML = `推薦：<span style="color:${color}">${best}</span>`;
+        document.getElementById('cardDetail').innerText = prefix + reason;
     }
 
-    // === 7. 外連轉換邏輯 ===
-    async function pasteFromClipboard() {
-        try { const text = await navigator.clipboard.readText(); document.getElementById('linkInput').value = text; convertLink(); } catch (err) { alert('無法讀取剪貼簿，請手動貼上'); }
-    }
+    // === 外連轉換邏輯 ===
+    async function pasteFromClipboard() { try { document.getElementById('linkInput').value = await navigator.clipboard.readText(); convertLink(); } catch(e){} }
     function convertLink() {
-        const raw = document.getElementById('linkInput').value.trim();
-        let fileId = "";
-        if (raw.includes("drive.google.com")) {
-            const match1 = raw.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
-            const match2 = raw.match(/id=([a-zA-Z0-9_-]+)/);
-            if (match1) fileId = match1[1]; else if (match2) fileId = match2[1];
-        }
-        const output = document.getElementById('linkOutput');
-        const copyBtn = document.getElementById('copyLinkBtn');
-        if (fileId) { output.value = `https://drive.google.com/thumbnail?id=${fileId}&sz=w1366`; copyBtn.disabled = false; } 
-        else { output.value = "❌ 格式錯誤，請確認是否為圖片分享連結"; copyBtn.disabled = true; }
+        const raw = document.getElementById('linkInput').value.trim(); let id = "";
+        const m1 = raw.match(/\/file\/d\/([a-zA-Z0-9_-]+)/); const m2 = raw.match(/id=([a-zA-Z0-9_-]+)/);
+        if (m1) id = m1[1]; else if (m2) id = m2[1];
+        const out = document.getElementById('linkOutput'); const btn = document.getElementById('copyLinkBtn');
+        if (id) { out.value = `https://drive.google.com/thumbnail?id=${id}&sz=w1366`; btn.disabled = false; }
+        else { out.value = "❌ 格式錯誤"; btn.disabled = true; }
     }
     function copyLink() {
-        const copyText = document.getElementById("linkOutput");
-        copyText.select(); copyText.setSelectionRange(0, 99999); 
-        navigator.clipboard.writeText(copyText.value);
-        const btn = document.getElementById('copyLinkBtn');
-        const originalText = btn.innerText;
-        btn.innerText = "✅ 已複製";
-        setTimeout(() => btn.innerText = originalText, 1500);
+        const out = document.getElementById("linkOutput"); out.select(); navigator.clipboard.writeText(out.value);
+        const b = document.getElementById('copyLinkBtn'); const old = b.innerText; b.innerText = "✅ 已複製"; setTimeout(()=>b.innerText=old, 1500);
     }
     function openPopup() { window.open(window.location.href, "ToolsPopup", "menubar=no,toolbar=no,location=no,status=no"); }
-
 </script>
 
 </body>
 </html>
-
