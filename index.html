@@ -578,7 +578,7 @@
         initGridFlow();
     });
 
-    // === 核心：分頁切換邏輯 ===
+    // === 核心：分頁切換邏輯 (已對應最新排序) ===
     function switchTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -742,7 +742,7 @@
         else if (key === 'Escape') calcInput('AC');
     });
 
-    // === 3. 商城捷徑與搜尋邏輯 (新增虎之穴、Getchu轉碼) ===
+    // === 3. 商城捷徑與搜尋邏輯 (修正舊系統編碼與路徑) ===
     function openShop() {
         const shop = document.getElementById('shopSelector').value;
         const input = document.getElementById('shopInput').value.trim();
@@ -775,12 +775,12 @@
         const keyword = document.getElementById('searchKeyword').value.trim();
         if (!keyword) { alert('請先輸入搜尋關鍵字！'); return; }
 
-        // 處理需要特殊編碼的平台
+        // 針對需要舊式編碼的網站，建立隱藏表單提交強制轉換 (避免亂碼與 Trader 的字數錯誤)
+        // 並將 Getchu 修改為 https 解決 Chrome 警告
         if (platform === 'sofmap' || platform === 'trader' || platform === 'getchu') {
             const form = document.createElement('form');
             form.method = 'GET';
             form.target = '_blank';
-            
             if (platform === 'sofmap') {
                 form.action = 'https://a.sofmap.com/search_result.aspx';
                 form.acceptCharset = 'Shift_JIS';
@@ -792,12 +792,14 @@
                 const input = document.createElement('input'); input.type = 'hidden'; input.name = 'search'; input.value = keyword;
                 form.appendChild(input);
             } else if (platform === 'getchu') {
-                form.action = 'http://www.getchu.com/php/search.phtml';
+                form.action = 'https://www.getchu.com/php/search.phtml'; // 修正: 使用 https
                 form.acceptCharset = 'EUC-JP';
                 const input = document.createElement('input'); input.type = 'hidden'; input.name = 'search_keyword'; input.value = keyword;
                 form.appendChild(input);
             }
-            document.body.appendChild(form); form.submit(); document.body.removeChild(form);
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
             return;
         }
 
@@ -807,17 +809,17 @@
             case 'amazon': url = `https://www.amazon.co.jp/s?k=${encoded}`; break;
             case 'melon': url = `https://www.melonbooks.co.jp/search/search.php?name=${encoded}`; break;
             case 'surugaya': url = `https://www.suruga-ya.jp/search?search_word=${encoded}`; break;
+            case 'rakuten': url = `https://books.rakuten.co.jp/search?sitem=${encoded}`; break;
+            case 'animate': url = `https://www.animate-onlineshop.jp/products/list.php?mode=search&smt=${encoded}`; break;
+            case 'gamers': url = `https://www.gamers.co.jp/products/list.php?mode=search&smt=${encoded}`; break;
+            case 'amiami': url = `https://slist.amiami.jp/top/search/list?s_keywords=${encoded}`; break;
+            case 'tora': url = `https://ec.toranoana.jp/tora_r/ec/app/catalog/list?searchWord=${encoded}`; break;
+            case 'ebten': url = `https://store.kadokawa.co.jp/shop/goods/search.aspx?keyword=${encoded}`; break;
+            case 'wondergoo': url = `https://shinseidowondergoo.com/search?q=${encoded}`; break;
             case 'booth': url = `https://booth.pm/zh-tw/search/${encoded}`; break;
             case 'yahoo': url = `https://auctions.yahoo.co.jp/search/search?p=${encoded}`; break;
             case 'mercari': url = `https://jp.mercari.com/search?keyword=${encoded}`; break;
-            case 'amiami': url = `https://slist.amiami.jp/top/search/list?s_keywords=${encoded}`; break;
-            case 'ebten': url = `https://store.kadokawa.co.jp/shop/goods/search.aspx?keyword=${encoded}`; break;
-            case 'gamers': url = `https://www.gamers.co.jp/products/list.php?mode=search&smt=${encoded}`; break;
-            case 'rakuten': url = `https://books.rakuten.co.jp/search?sitem=${encoded}`; break;
-            case 'wondergoo': url = `https://shinseidowondergoo.com/search?q=${encoded}`; break;
-            case 'animate': url = `https://www.animate-onlineshop.jp/products/list.php?mode=search&smt=${encoded}`; break;
-            case 'neowing': url = `https://www.neowing.co.jp/searches?term.media_format=&q=${encoded}`; break;
-            case 'tora': url = `https://ec.toranoana.jp/tora_r/ec/app/catalog/list?searchWord=${encoded}`; break;
+            case 'neowing': url = `https://www.neowing.co.jp/searches?term.media_format=&q=${encoded}`; break; // 修正 Neowing 網址
         }
         if (url) window.open(url, '_blank');
     }
@@ -828,7 +830,7 @@
     memoArea.addEventListener('input', function() { localStorage.setItem('tool_memo', this.value); });
     function clearMemo() { if(confirm('確定要清空記事嗎？')) { memoArea.value = ''; localStorage.removeItem('tool_memo'); } }
 
-    // === 5. GridFlow 圖片合併邏輯 (原始穩定版) ===
+    // === 5. GridFlow 圖片合併邏輯 ===
     let gfItems = []; 
     let gfDraggedItem = null;
 
