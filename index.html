@@ -141,6 +141,7 @@
             font-size: 18px;
             font-weight: bold;
             color: #2c3e50;
+            line-height: 1.5;
         }
 
         .history-list {
@@ -301,6 +302,7 @@
 
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('pricing')">📊 商品計價</button>
+        <button class="tab-btn" onclick="switchTab('profit')">💰 利潤計算</button>
         <button class="tab-btn" onclick="switchTab('calc')">📟 計算機</button>
         <button class="tab-btn" onclick="switchTab('shop')">🛒 商城外連</button>
         <button class="tab-btn" onclick="switchTab('memo')">📝 記事本</button>
@@ -320,16 +322,16 @@
             </select>
         </div>
         <div class="form-group">
-            <input type="text" id="jpyInput" placeholder="日幣售價（可輸入算式，如 6820/1.1）">
+            <input type="text" id="jpyInput" placeholder="日幣售價（可輸入算式，如 6820/1.1）" class="price-input">
         </div>
         <div class="form-group" id="jpShipGroup">
-            <input type="text" id="jpShipInput" placeholder="日本國內運費（日幣）">
+            <input type="text" id="jpShipInput" placeholder="日本國內運費（日幣）" class="price-input">
         </div>
         <div class="form-group" id="rateGroup">
-            <input type="text" id="rateInput" placeholder="目前匯率">
+            <input type="text" id="rateInput" placeholder="目前匯率" class="price-input">
         </div>
         <div class="form-group" id="shipGroup">
-            <input type="text" id="shipInput" placeholder="國際運費（台幣）">
+            <input type="text" id="shipInput" placeholder="國際運費（台幣）" class="price-input">
         </div>
         <button class="action-btn" onclick="calculatePrice()">計算</button>
         <div class="result-box" id="priceResult">建議售價：</div>
@@ -341,10 +343,44 @@
         </div>
     </div>
 
+    <div id="profit" class="tab-content">
+        <div class="form-group">
+            <label>商品總成本：</label>
+            <input type="text" id="profitCost" placeholder="請輸入商品成本（可輸入算式，如 1500+200）" class="profit-input">
+        </div>
+        <div class="form-group">
+            <label>商品售價：</label>
+            <input type="text" id="profitPrice" placeholder="請輸入商品售價（可輸入算式）" class="profit-input">
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <div class="form-group" style="flex: 1;">
+                <label>成交費 (%)：</label>
+                <input type="number" id="profitFeeRate" value="3" step="0.1" class="profit-input" title="上限以售價 20,000 計算">
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label>金流費 (%)：</label>
+                <input type="number" id="profitPaymentFeeRate" value="1" step="0.1" class="profit-input" title="無上限">
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label>發票稅 (%)：</label>
+                <input type="number" id="profitTaxRate" value="5" step="0.1" class="profit-input" title="台灣標準營業稅為 5%">
+            </div>
+        </div>
+        <button class="action-btn" onclick="calculateProfit()" style="background-color: #27ae60;">💰 計算利潤</button>
+        <div class="result-box" id="profitResult">
+            淨利潤：<br>
+            利潤率：
+        </div>
+        <div class="card-detail-text" id="profitDetail">計算明細將顯示於此。</div>
+        <div style="margin-top: 10px;">
+            <button class="action-btn secondary" onclick="clearProfitInputs()">🧹 清除輸入</button>
+        </div>
+    </div>
+
     <div id="calc" class="tab-content">
         <div class="calc-display">
             <div class="calc-expr" id="calcExpr"></div>
-            <div id="calcResult">0</div>
+            <div id="calcResultDisplay">0</div>
         </div>
         <div class="calc-grid">
             <button class="calc-btn op" onclick="calcInput('AC')">AC</button>
@@ -354,11 +390,11 @@
             <button class="calc-btn" onclick="calcInput('7')">7</button>
             <button class="calc-btn" onclick="calcInput('8')">8</button>
             <button class="calc-btn" onclick="calcInput('9')">9</button>
-            <button class="calc-btn op" onclick="calcInput('/')">÷</button>
+            <button class="calc-btn op" onclick="calcInput('÷')">÷</button>
             <button class="calc-btn" onclick="calcInput('4')">4</button>
             <button class="calc-btn" onclick="calcInput('5')">5</button>
             <button class="calc-btn" onclick="calcInput('6')">6</button>
-            <button class="calc-btn op" onclick="calcInput('*')">×</button>
+            <button class="calc-btn op" onclick="calcInput('×')">×</button>
             <button class="calc-btn" onclick="calcInput('1')">1</button>
             <button class="calc-btn" onclick="calcInput('2')">2</button>
             <button class="calc-btn" onclick="calcInput('3')">3</button>
@@ -552,6 +588,7 @@
         loadRate();
         updatePricingFields();
         setupEnterKeyBindings();
+        setupProfitEnter(); // 啟動利潤計算的 Enter 監聽
         loadCardSettings(); 
         initCardDate(); 
 
@@ -578,13 +615,13 @@
         initGridFlow();
     });
 
-    // === 核心：分頁切換邏輯 (已對應最新排序) ===
+    // === 核心：分頁切換邏輯 ===
     function switchTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
         
         document.getElementById(tabId).classList.add('active');
-        const index = ['pricing', 'calc', 'shop', 'memo', 'gridflow', 'card', 'link'].indexOf(tabId);
+        const index = ['pricing', 'profit', 'calc', 'shop', 'memo', 'gridflow', 'card', 'link'].indexOf(tabId);
         document.querySelectorAll('.tab-btn')[index].classList.add('active');
     }
 
@@ -619,6 +656,11 @@
             try { return Function('"use strict";return (' + expr + ')')(); } catch (e) { return 0; }
         }
         return 0;
+    }
+
+    function evalSafe(e) { 
+        try { return eval(e.replace(/×/g,'*').replace(/÷/g,'/')) || 0; } 
+        catch(x){return 0;} 
     }
 
     function updatePricingFields() {
@@ -689,10 +731,53 @@
     }
     function clearHistory() { document.getElementById('pricingHistory').innerHTML = ''; }
 
+    // === 新增：利潤計算邏輯 ===
+    function setupProfitEnter() {
+        document.querySelectorAll('.profit-input').forEach(input => {
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    calculateProfit();
+                }
+            });
+        });
+    }
+
+    function calculateProfit() {
+        const cost = evalSafe(document.getElementById('profitCost').value);
+        const price = evalSafe(document.getElementById('profitPrice').value);
+        const feeRate = parseFloat(document.getElementById('profitFeeRate').value) / 100 || 0;
+        const paymentFeeRate = parseFloat(document.getElementById('profitPaymentFeeRate').value) / 100 || 0;
+        const taxRate = parseFloat(document.getElementById('profitTaxRate').value) / 100 || 0;
+
+        if (price <= 0) {
+            document.getElementById('profitResult').innerHTML = "淨利潤：0<br>利潤率：0%";
+            document.getElementById('profitDetail').innerText = "請輸入有效的售價";
+            return;
+        }
+
+        const feeBase = Math.min(price, 20000);
+        const fee = Math.round(feeBase * feeRate);
+        const paymentFee = Math.round(price * paymentFeeRate);
+        const tax = Math.round(price * taxRate);
+        const profit = price - cost - fee - paymentFee - tax;
+        const margin = (profit / price) * 100;
+
+        document.getElementById('profitResult').innerHTML = `淨利潤：NT$ ${profit}<br>利潤率：${margin.toFixed(2)}%`;
+        document.getElementById('profitDetail').innerText = `扣除明細：\n成本 = NT$ ${cost}\n成交費 (${feeRate * 100}%, 最高2萬計) = NT$ ${fee}\n金流費 (${paymentFeeRate * 100}%, 無上限) = NT$ ${paymentFee}\n發票稅 (${taxRate * 100}%) = NT$ ${tax}`;
+    }
+
+    function clearProfitInputs() {
+        document.getElementById('profitCost').value = '';
+        document.getElementById('profitPrice').value = '';
+        document.getElementById('profitResult').innerHTML = '淨利潤：<br>利潤率：';
+        document.getElementById('profitDetail').innerText = '計算明細將顯示於此。';
+    }
+
     // === 2. 計算機邏輯 ===
     let calcExpr = ""; let calcLastRes = "";
     function calcInput(key) {
-        const display = document.getElementById('calcResult');
+        const display = document.getElementById('calcResultDisplay');
         const exprDisplay = document.getElementById('calcExpr');
 
         if (key === 'AC') {
@@ -700,49 +785,38 @@
         } else if (key === 'DEL') {
             calcExpr = calcExpr.slice(0, -1); display.innerText = calcExpr || "0";
         } else if (key === '=') {
+            if (!cExpr) return;
             try {
-                if (calcLastRes && !/^[\d\.]/.test(calcExpr)) calcExpr = calcLastRes + calcExpr;
-                let sanitizedExpr = calcExpr.replace(/×/g, '*').replace(/÷/g, '/');
-                if (!sanitizedExpr || !/^[\d\(]/.test(sanitizedExpr)) throw new Error('Invalid start');
-
-                const operators = sanitizedExpr.match(/[\+\-\*\/]/g);
-                const operands = sanitizedExpr.split(/[\+\-\*\/]/).map(Number); 
-
-                if (!operators || operands.length !== operators.length + 1) {
-                    if (operators && operands.length === operators.length) throw new Error('Incomplete expression');
-                    if (sanitizedExpr.includes('(') || sanitizedExpr.includes(')')) throw new Error('Brackets not supported in simple mode');
-                    let fallbackResult = eval(sanitizedExpr);
-                    if (isNaN(fallbackResult) || !isFinite(fallbackResult)) throw new Error('Fallback eval failed');
-                    var result = fallbackResult;
-                } else {
-                    var result = operands[0];
-                    for (let i = 0; i < operators.length; i++) {
-                        const operator = operators[i]; const nextOperand = operands[i + 1];
-                        if (operator === '+') result += nextOperand;
-                        else if (operator === '-') result -= nextOperand;
-                        else if (operator === '*') result *= nextOperand;
-                        else if (operator === '/') { if (nextOperand === 0) throw new Error('Division by zero'); result /= nextOperand; }
-                    }
+                let s = cExpr.replace(/×/g, '*').replace(/÷/g, '/');
+                let tokens = s.match(/(\d+\.?\d*)|([\+\-\*\/])/g);
+                let result = parseFloat(tokens[0]);
+                for (let i = 1; i < tokens.length; i += 2) {
+                    let op = tokens[i], val = parseFloat(tokens[i+1]);
+                    if (op === '+') result += val; if (op === '-') result -= val;
+                    if (op === '*') result *= val; if (op === '/') result /= val;
                 }
-                const finalResult = Math.round(result * 100) / 100;
-                calcLastRes = finalResult.toString();
-                display.innerText = finalResult; exprDisplay.innerText = calcExpr + " ="; calcExpr = "";
-            } catch (error) { display.innerText = "Error"; exprDisplay.innerText = calcExpr + " ="; calcExpr = ""; }
+                cLast = Math.round(result * 100) / 100 + "";
+                resDisp.innerText = cLast; exprDisp.innerText = cExpr + " ="; cExpr = "";
+            } catch (e) { resDisp.innerText = "Error"; cExpr = ""; }
         } else {
-            if (['+','-','*','/'].includes(key) && calcExpr === "" && calcLastRes !== "") calcExpr = calcLastRes;
-            calcExpr += key; display.innerText = calcExpr;
+            if (['+','-','×','÷'].includes(key) && !cExpr && cLast) cExpr = cLast;
+            cExpr += key; resDisp.innerText = cExpr;
         }
     }
     document.addEventListener('keydown', function(event) {
         if (!document.getElementById('calc').classList.contains('active')) return;
         const key = event.key;
-        if (/[0-9\.\+\-\*\/\(\)]/.test(key)) calcInput(key.replace('*','×').replace('/','÷'));
-        else if (key === 'Enter') { calcInput('='); event.preventDefault(); }
+        if (/[0-9\.]/.test(key)) calcInput(key);
+        else if (key === '+') calcInput('+');
+        else if (key === '-') calcInput('-');
+        else if (key === '*') calcInput('×');
+        else if (key === '/') calcInput('÷');
+        else if (key === 'Enter') { event.preventDefault(); calcInput('='); }
         else if (key === 'Backspace') calcInput('DEL');
         else if (key === 'Escape') calcInput('AC');
     });
 
-    // === 3. 商城捷徑與搜尋邏輯 (修正舊系統編碼與路徑) ===
+    // === 3. 商城捷徑與搜尋邏輯 ===
     function openShop() {
         const shop = document.getElementById('shopSelector').value;
         const input = document.getElementById('shopInput').value.trim();
@@ -775,12 +849,10 @@
         const keyword = document.getElementById('searchKeyword').value.trim();
         if (!keyword) { alert('請先輸入搜尋關鍵字！'); return; }
 
-        // 針對需要舊式編碼的網站，建立隱藏表單提交強制轉換 (避免亂碼與 Trader 的字數錯誤)
-        // 並將 Getchu 修改為 https 解決 Chrome 警告
         if (platform === 'sofmap' || platform === 'trader' || platform === 'getchu') {
             const form = document.createElement('form');
-            form.method = 'GET';
-            form.target = '_blank';
+            form.method = 'GET'; form.target = '_blank';
+            
             if (platform === 'sofmap') {
                 form.action = 'https://a.sofmap.com/search_result.aspx';
                 form.acceptCharset = 'Shift_JIS';
@@ -792,14 +864,12 @@
                 const input = document.createElement('input'); input.type = 'hidden'; input.name = 'search'; input.value = keyword;
                 form.appendChild(input);
             } else if (platform === 'getchu') {
-                form.action = 'https://www.getchu.com/php/search.phtml'; // 修正: 使用 https
+                form.action = 'https://www.getchu.com/php/search.phtml';
                 form.acceptCharset = 'EUC-JP';
                 const input = document.createElement('input'); input.type = 'hidden'; input.name = 'search_keyword'; input.value = keyword;
                 form.appendChild(input);
             }
-            document.body.appendChild(form);
-            form.submit();
-            document.body.removeChild(form);
+            document.body.appendChild(form); form.submit(); document.body.removeChild(form);
             return;
         }
 
@@ -819,7 +889,7 @@
             case 'booth': url = `https://booth.pm/zh-tw/search/${encoded}`; break;
             case 'yahoo': url = `https://auctions.yahoo.co.jp/search/search?p=${encoded}`; break;
             case 'mercari': url = `https://jp.mercari.com/search?keyword=${encoded}`; break;
-            case 'neowing': url = `https://www.neowing.co.jp/searches?term.media_format=&q=${encoded}`; break; // 修正 Neowing 網址
+            case 'neowing': url = `https://www.neowing.co.jp/searches?term.media_format=&q=${encoded}`; break;
         }
         if (url) window.open(url, '_blank');
     }
