@@ -359,7 +359,7 @@
             </div>
             <div class="form-group" style="flex: 1;">
                 <label>金流費 (%)：</label>
-                <input type="number" id="profitPaymentFeeRate" value="1" step="0.1" class="profit-input" title="無上限">
+                <input type="number" id="profitPaymentFeeRate" value="1.5" step="0.1" class="profit-input" title="無上限">
             </div>
             <div class="form-group" style="flex: 1;">
                 <label>發票稅 (%)：</label>
@@ -380,7 +380,7 @@
     <div id="calc" class="tab-content">
         <div class="calc-display">
             <div class="calc-expr" id="calcExpr"></div>
-            <div id="calcResultDisplay">0</div>
+            <div id="calcResult">0</div>
         </div>
         <div class="calc-grid">
             <button class="calc-btn op" onclick="calcInput('AC')">AC</button>
@@ -731,7 +731,7 @@
     }
     function clearHistory() { document.getElementById('pricingHistory').innerHTML = ''; }
 
-    // === 新增：利潤計算邏輯 ===
+    // === 新增：利潤計算邏輯 (修正成交費上限與新增金流費) ===
     function setupProfitEnter() {
         document.querySelectorAll('.profit-input').forEach(input => {
             input.addEventListener('keydown', (e) => {
@@ -756,15 +756,19 @@
             return;
         }
 
+        // 成交費上限為售價 20,000 的比例
         const feeBase = Math.min(price, 20000);
         const fee = Math.round(feeBase * feeRate);
+        
+        // 金流費與發票稅為全額無上限
         const paymentFee = Math.round(price * paymentFeeRate);
         const tax = Math.round(price * taxRate);
+        
         const profit = price - cost - fee - paymentFee - tax;
         const margin = (profit / price) * 100;
 
         document.getElementById('profitResult').innerHTML = `淨利潤：NT$ ${profit}<br>利潤率：${margin.toFixed(2)}%`;
-        document.getElementById('profitDetail').innerText = `扣除明細：\n成本 = NT$ ${cost}\n成交費 (${feeRate * 100}%, 最高2萬計) = NT$ ${fee}\n金流費 (${paymentFeeRate * 100}%, 無上限) = NT$ ${paymentFee}\n發票稅 (${taxRate * 100}%) = NT$ ${tax}`;
+        document.getElementById('profitDetail').innerText = `扣除明細：\n成本 = NT$ ${cost}\n成交費 (${(feeRate * 100).toFixed(1)}%, 最高以2萬計) = NT$ ${fee}\n金流費 (${(paymentFeeRate * 100).toFixed(1)}%, 無上限) = NT$ ${paymentFee}\n發票稅 (${(taxRate * 100).toFixed(1)}%) = NT$ ${tax}`;
     }
 
     function clearProfitInputs() {
@@ -777,7 +781,7 @@
     // === 2. 計算機邏輯 ===
     let calcExpr = ""; let calcLastRes = "";
     function calcInput(key) {
-        const display = document.getElementById('calcResultDisplay');
+        const display = document.getElementById('calcResult');
         const exprDisplay = document.getElementById('calcExpr');
 
         if (key === 'AC') {
@@ -842,7 +846,7 @@
     }
 
     async function pasteToShopInput() {
-        try { const text = await navigator.clipboard.readText(); document.getElementById('shopInput').value = text; openShop(); } catch (err) { alert('無法讀取剪貼簿，請手動貼上'); }
+        try { const text = await navigator.clipboard.readText(); document.getElementById('shopInput').value = text; openShop(); } catch (err) { alert('無法讀取剪貼簿，請手手動貼上'); }
     }
 
     function doSearch(platform) {
