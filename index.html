@@ -721,39 +721,48 @@
 
         const final = result.toFixed(2);
         
-        // 動態計算利潤預覽 (抓取利潤分頁的設定值)
+        // === 修正：動態計算預估成本與利潤 ===
         let cost = 0;
-        // 中堅CD與中堅書籍，成本需要乘上 1.05
-        if (mode === 0) cost = (jpy + jpShip) * rate + ship;
-        else if (mode === 1) cost = jpy * 1.05 * (parseFloat(localStorage.getItem('tool_last_rate')) || 0.22);
-        else if (mode === 2) cost = jpy * 1.05 * (parseFloat(localStorage.getItem('tool_last_rate')) || 0.22);
-        else if (mode === 3) cost = jpy * rate + ship;
+        
+        if (mode === 0) {
+            cost = (jpy + jpShip) * rate + ship;
+        } else if (mode === 1) {
+            // 完全依照您提供的圖片邏輯，階梯式進貨成本
+            if (jpy <= 3999) cost = jpy * 1.05 * 0.27 + 50;
+            else if (jpy <= 7999) cost = jpy * 1.05 * 0.26 + 50;
+            else if (jpy <= 11999) cost = jpy * 1.05 * 0.25 + 50;
+            else cost = jpy * 1.05 * 0.245 + 50;
+        } else if (mode === 2) {
+            // 中堅船版書籍使用輸入的係數，未輸入則抓舊記憶
+            let currentRate = rate || parseFloat(localStorage.getItem('tool_last_rate')) || 0.22;
+            cost = jpy * 1.05 * currentRate;
+        } else if (mode === 3) {
+            cost = jpy * rate + ship;
+        }
 
         const feeRate = parseFloat(document.getElementById('profitFeeRate').value) / 100 || 0.03;
         const paymentFeeRate = parseFloat(document.getElementById('profitPaymentFeeRate').value) / 100 || 0.015;
         const taxRate = parseFloat(document.getElementById('profitTaxRate').value) / 100 || 0.05;
 
-        // 計算費用
+        // 規費計算 (成交費上限兩萬)
         const feeBase = Math.min(result, 20000);
         const fee = Math.round(feeBase * feeRate);
         const paymentFee = Math.round(result * paymentFeeRate);
         
-        // 發票稅邏輯 (銷項稅額 - 進項稅額)
+        // 營業稅計算 (進銷項抵扣)
         const outputTax = Math.round(result * taxRate);
-        // 如果是中堅體系(模式1, 2)，自動享有進項扣抵
         const inputTax = (mode === 1 || mode === 2) ? Math.round(cost * taxRate) : 0;
         const tax = Math.max(0, outputTax - inputTax);
 
         const profit = result - cost - fee - paymentFee - tax;
         const margin = result > 0 ? ((profit / result) * 100).toFixed(2) : 0;
 
-        // 若有進項扣抵，在預覽列顯示提示
-        const taxTip = (mode === 1 || mode === 2) ? "已扣除進項稅額" : "未扣抵進項稅額";
+        const taxTip = (mode === 1 || mode === 2) ? " (已扣除進項稅額)" : "";
 
         document.getElementById('priceResult').innerHTML = `
             建議售價：NT$ ${final}<br>
             <span style="font-size: 14px; color: #7f8c8d; font-weight: normal;">
-                (預估成本: NT$ ${Math.round(cost)} | 實際要繳的稅: NT$ ${tax} | 淨利: NT$ ${Math.round(profit)} | 利潤率: ${margin}%)
+                (預估成本: NT$ ${Math.round(cost)} | 應繳發票稅: NT$ ${tax}${taxTip} | 淨利: NT$ ${Math.round(profit)} | 利潤率: ${margin}%)
             </span>`;
         
         const modeName = document.getElementById('modeSelector').options[mode].text;
@@ -895,7 +904,7 @@
     }
 
     async function pasteToShopInput() {
-        try { const text = await navigator.clipboard.readText(); document.getElementById('shopInput').value = text; openShop(); } catch (err) { alert('無法讀取剪貼簿，請手動貼上'); }
+        try { const text = await navigator.clipboard.readText(); document.getElementById('shopInput').value = text; openShop(); } catch (err) { alert('無法讀取剪貼簿，請手手動貼上'); }
     }
 
     function doSearch(platform) {
