@@ -421,6 +421,7 @@
                 <option value="booth">🎨 BOOTH</option>
                 <option value="yahoo">🔨 日本 Yahoo 拍賣</option>
                 <option value="mercari">🛍️ Mercari</option>
+                <option value="1999">🤖 HobbySearch</option>
             </select>
         </div>
         <div class="form-group">
@@ -460,6 +461,7 @@
             <button class="search-btn" style="background-color: #f1c40f; color: #333;" onclick="doSearch('yahoo')">🔨 日本Yahoo 拍賣</button>
             <button class="search-btn" style="background-color: #e056fd;" onclick="doSearch('mercari')">🛍️ Mercari</button>
             <button class="search-btn" style="background-color: #1abc9c;" onclick="doSearch('neowing')">💿 Neowing</button>
+            <button class="search-btn" style="background-color: #4b6584;" onclick="doSearch('1999')">🤖 HobbySearch</button>
         </div>
     </div>
 
@@ -721,7 +723,7 @@
 
         const final = result.toFixed(2);
         
-        // === 修正：動態計算預估成本與利潤 ===
+        // 動態計算利潤預覽 (抓取利潤分頁的設定值，並加上 1.05 係數修復)
         let cost = 0;
         
         if (mode === 0) {
@@ -890,6 +892,7 @@
         else if (shop === 'booth') { const match = input.match(/items\/(\d+)/); finalId = match ? match[1] : input.replace(/\D/g, ''); }
         else if (shop === 'yahoo') { const match = input.match(/auction\/([a-zA-Z0-9_-]+)/); finalId = match ? match[1] : input.replace(/[^a-zA-Z0-9_-]/g, ''); }
         else if (shop === 'mercari') { const match = input.match(/item\/([a-zA-Z0-9_-]+)/); finalId = match ? match[1] : input.replace(/[^a-zA-Z0-9_-]/g, ''); }
+        else if (shop === '1999') { const match = input.match(/\/(\d+)/); finalId = match ? match[1] : input.replace(/\D/g, ''); }
 
         if (finalId) {
             let url = "";
@@ -898,13 +901,14 @@
             else if (shop === 'booth') url = `https://booth.pm/zh-tw/items/${finalId}`;
             else if (shop === 'yahoo') url = `https://auctions.yahoo.co.jp/jp/auction/${finalId}`;
             else if (shop === 'mercari') url = `https://jp.mercari.com/item/${finalId}`;
+            else if (shop === '1999') url = `https://www.1999.co.jp/${finalId}`;
             window.open(url, '_blank');
             document.getElementById('shopInput').value = '';
         } else { alert('無法辨識商品編號，請確認後重新輸入！'); }
     }
 
     async function pasteToShopInput() {
-        try { const text = await navigator.clipboard.readText(); document.getElementById('shopInput').value = text; openShop(); } catch (err) { alert('無法讀取剪貼簿，請手手動貼上'); }
+        try { const text = await navigator.clipboard.readText(); document.getElementById('shopInput').value = text; openShop(); } catch (err) { alert('無法讀取剪貼簿，請手動貼上'); }
     }
 
     function doSearch(platform) {
@@ -953,6 +957,7 @@
             case 'yahoo': url = `https://auctions.yahoo.co.jp/search/search?p=${encoded}`; break;
             case 'mercari': url = `https://jp.mercari.com/search?keyword=${encoded}`; break;
             case 'neowing': url = `https://www.neowing.co.jp/searches?term.media_format=&q=${encoded}`; break;
+            case '1999': url = `https://www.1999.co.jp/search?typ1_c=110&searchkey=${encoded}`; break;
         }
         if (url) window.open(url, '_blank');
     }
