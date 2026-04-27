@@ -498,14 +498,19 @@
             </label>
         </div>
 
-        <div style="display: flex; gap: 10px;">
+        <div style="display: flex; gap: 10px; align-items: flex-end;">
             <div class="form-group" style="flex: 1;">
                 <label>間距 (px)</label>
                 <input type="number" id="gapSize" value="10" min="0" max="100">
             </div>
             <div class="form-group" style="flex: 1;">
                 <label>背景顏色</label>
-                <input type="color" id="bgColor" value="#ffffff" style="padding: 2px 5px; height: 40px;">
+                <div style="display: flex; align-items: center; gap: 5px;">
+                    <input type="color" id="bgColor" value="#ffffff" style="padding: 2px 5px; height: 40px; flex: 1;">
+                    <label style="font-weight: normal; font-size: 13px; display: flex; align-items: center; gap: 4px; margin: 0; cursor: pointer;">
+                        <input type="checkbox" id="bgTransparent"> 透明
+                    </label>
+                </div>
             </div>
             <div class="form-group" style="flex: 1;">
                 <label>格式</label>
@@ -591,7 +596,6 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // 工具箱初始化
         loadRate();
         updatePricingFields();
         setupEnterKeyBindings();
@@ -618,11 +622,9 @@
             });
         }
 
-        // 初始化 GridFlow
         initGridFlow();
     });
 
-    // === 核心：分頁切換邏輯 ===
     function switchTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -632,7 +634,6 @@
         document.querySelectorAll('.tab-btn')[index].classList.add('active');
     }
 
-    // === 1. 定價計算器邏輯 ===
     function setupEnterKeyBindings() {
         const inputs = ['jpyInput', 'jpShipInput', 'rateInput', 'shipInput'];
         inputs.forEach(id => {
@@ -723,19 +724,15 @@
 
         const final = result.toFixed(2);
         
-        // 動態計算利潤預覽 (抓取利潤分頁的設定值，並加上 1.05 係數修復)
         let cost = 0;
-        
         if (mode === 0) {
             cost = (jpy + jpShip) * rate + ship;
         } else if (mode === 1) {
-            // 完全依照您提供的圖片邏輯，階梯式進貨成本
             if (jpy <= 3999) cost = jpy * 1.05 * 0.27 + 50;
             else if (jpy <= 7999) cost = jpy * 1.05 * 0.26 + 50;
             else if (jpy <= 11999) cost = jpy * 1.05 * 0.25 + 50;
             else cost = jpy * 1.05 * 0.245 + 50;
         } else if (mode === 2) {
-            // 中堅船版書籍使用輸入的係數，未輸入則抓舊記憶
             let currentRate = rate || parseFloat(localStorage.getItem('tool_last_rate')) || 0.22;
             cost = jpy * 1.05 * currentRate;
         } else if (mode === 3) {
@@ -746,12 +743,10 @@
         const paymentFeeRate = parseFloat(document.getElementById('profitPaymentFeeRate').value) / 100 || 0.015;
         const taxRate = parseFloat(document.getElementById('profitTaxRate').value) / 100 || 0.05;
 
-        // 規費計算 (成交費上限兩萬)
         const feeBase = Math.min(result, 20000);
         const fee = Math.round(feeBase * feeRate);
         const paymentFee = Math.round(result * paymentFeeRate);
         
-        // 營業稅計算 (進銷項抵扣)
         const outputTax = Math.round(result * taxRate);
         const inputTax = (mode === 1 || mode === 2) ? Math.round(cost * taxRate) : 0;
         const tax = Math.max(0, outputTax - inputTax);
@@ -782,7 +777,6 @@
     }
     function clearHistory() { document.getElementById('pricingHistory').innerHTML = ''; }
 
-    // === 利潤計算器邏輯 ===
     function setupProfitEnter() {
         document.querySelectorAll('.profit-input').forEach(input => {
             input.addEventListener('keydown', (e) => {
@@ -812,7 +806,6 @@
         const fee = Math.round(feeBase * feeRate);
         const paymentFee = Math.round(price * paymentFeeRate);
         
-        // 營業稅計算
         const outputTax = Math.round(price * taxRate);
         const inputTax = hasInputTax ? Math.round(cost * taxRate) : 0;
         const tax = Math.max(0, outputTax - inputTax);
@@ -838,7 +831,6 @@
         document.getElementById('profitDetail').innerText = '計算明細將顯示於此。';
     }
 
-    // === 2. 計算機邏輯 ===
     let calcExpr = ""; let calcLastRes = "";
     function calcInput(key) {
         const display = document.getElementById('calcResultDisplay');
@@ -880,7 +872,6 @@
         else if (key === 'Escape') calcInput('AC');
     });
 
-    // === 3. 商城捷徑與搜尋邏輯 ===
     function openShop() {
         const shop = document.getElementById('shopSelector').value;
         const input = document.getElementById('shopInput').value.trim();
@@ -911,6 +902,7 @@
         try { const text = await navigator.clipboard.readText(); document.getElementById('shopInput').value = text; openShop(); } catch (err) { alert('無法讀取剪貼簿，請手動貼上'); }
     }
 
+    // === 完全還原的 Getchu/Sofmap/Trader 原生表單提交法 ===
     function doSearch(platform) {
         const keyword = document.getElementById('searchKeyword').value.trim();
         if (!keyword) { alert('請先輸入搜尋關鍵字！'); return; }
@@ -931,12 +923,14 @@
                 const input = document.createElement('input'); input.type = 'hidden'; input.name = 'search'; input.value = keyword;
                 form.appendChild(input);
             } else if (platform === 'getchu') {
-                form.action = 'https://www.getchu.com/php/search.phtml';
-                form.acceptCharset = 'EUC-JP';
+                form.action = 'https://www.getchu.com/php/search.phtml'; // 升級成 https
+                form.acceptCharset = 'EUC-JP'; // 原生指定 EUC-JP
                 const input = document.createElement('input'); input.type = 'hidden'; input.name = 'search_keyword'; input.value = keyword;
                 form.appendChild(input);
             }
-            document.body.appendChild(form); form.submit(); document.body.removeChild(form);
+            document.body.appendChild(form); 
+            form.submit(); 
+            document.body.removeChild(form);
             return;
         }
 
@@ -962,13 +956,11 @@
         if (url) window.open(url, '_blank');
     }
 
-    // === 4. 記事本邏輯 ===
     const memoArea = document.getElementById('memoArea');
     if (localStorage.getItem('tool_memo')) memoArea.value = localStorage.getItem('tool_memo');
     memoArea.addEventListener('input', function() { localStorage.setItem('tool_memo', this.value); });
     function clearMemo() { if(confirm('確定要清空記事嗎？')) { memoArea.value = ''; localStorage.removeItem('tool_memo'); } }
 
-    // === 5. GridFlow 圖片合併邏輯 ===
     let gfItems = []; 
     let gfDraggedItem = null;
 
@@ -979,6 +971,7 @@
         const incompleteTopInput = document.getElementById('incompleteTop');
         const gapSizeInput = document.getElementById('gapSize');
         const bgColorInput = document.getElementById('bgColor');
+        const bgTransparentInput = document.getElementById('bgTransparent');
         const dlBtn = document.getElementById('downloadBtn');
         const clrBtn = document.getElementById('clearImgBtn');
         const gridSet = document.getElementById('gridSettings');
@@ -989,7 +982,7 @@
 
         gfFileInput.addEventListener('change', handleUpload);
         
-        [layoutModeSelect, colCountInput, incompleteTopInput, gapSizeInput, bgColorInput].forEach(el => {
+        [layoutModeSelect, colCountInput, incompleteTopInput, gapSizeInput, bgColorInput, bgTransparentInput].forEach(el => {
             el.addEventListener('input', updateLayoutVisuals);
             el.addEventListener('change', updateLayoutVisuals);
         });
@@ -1115,10 +1108,11 @@
         const mode = document.getElementById('layoutMode').value;
         const gap = parseInt(document.getElementById('gapSize').value) || 0;
         const bg = document.getElementById('bgColor').value;
+        const isTransparent = document.getElementById('bgTransparent').checked;
         const colCount = parseInt(document.getElementById('colCount').value) || 2;
         const isInvert = document.getElementById('incompleteTop').checked;
 
-        interactArea.style.backgroundColor = bg;
+        interactArea.style.backgroundColor = isTransparent ? 'transparent' : bg;
         interactArea.style.gap = gap + 'px';
 
         const cards = document.querySelectorAll('.img-card');
@@ -1180,6 +1174,7 @@
             const mode = document.getElementById('layoutMode').value;
             const gap = parseInt(document.getElementById('gapSize').value) || 0;
             const bg = document.getElementById('bgColor').value;
+            const isTransparent = document.getElementById('bgTransparent').checked;
             const cols = parseInt(document.getElementById('colCount').value);
             const isInvert = document.getElementById('incompleteTop').checked;
             const exportFormat = document.getElementById('exportFormat').value;
@@ -1252,8 +1247,14 @@
 
             gfCanvas.width = canvasW;
             gfCanvas.height = canvasH;
-            gfCtx.fillStyle = bg;
-            gfCtx.fillRect(0, 0, canvasW, canvasH);
+            
+            gfCtx.clearRect(0, 0, canvasW, canvasH);
+            
+            if (!isTransparent || exportFormat === 'image/jpeg') {
+                gfCtx.fillStyle = (exportFormat === 'image/jpeg' && isTransparent) ? '#ffffff' : bg;
+                gfCtx.fillRect(0, 0, canvasW, canvasH);
+            }
+
             gfCtx.imageSmoothingEnabled = true;
             gfCtx.imageSmoothingQuality = 'high';
             
@@ -1267,7 +1268,6 @@
         });
     }
 
-    // === 6. 刷卡建議邏輯 ===
     function saveCardSettings() {
         localStorage.setItem('tool_card1_name', document.getElementById('card1Name').value);
         localStorage.setItem('tool_card1_date', document.getElementById('card1Date').value);
@@ -1348,7 +1348,6 @@
         document.getElementById('cardDetail').innerText = reasonPrefix + reason;
     }
 
-    // === 7. 外連轉換邏輯 ===
     async function pasteFromClipboard() {
         try { const text = await navigator.clipboard.readText(); document.getElementById('linkInput').value = text; convertLink(); } catch (err) { alert('無法讀取剪貼簿，請手動貼上'); }
     }
