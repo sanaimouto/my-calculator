@@ -319,11 +319,35 @@
                 <option value="1">中堅CD計價計算器</option>
                 <option value="2">中堅船版書籍計算器</option>
                 <option value="3">會場代購計價計算器</option>
+                <option value="4">Milestone進貨計價</option>
             </select>
         </div>
         <div class="form-group">
             <input type="text" id="jpyInput" placeholder="日幣售價（可輸入算式，如 6820/1.1）" class="price-input">
         </div>
+        
+        <div class="form-group" id="milestoneGroup" style="display: none;">
+            <div style="display: flex; gap: 10px;">
+                <div style="flex: 1;">
+                    <label>Milestone 廠商快速折數：</label>
+                    <select id="milestoneDiscountSelect" class="price-input" onchange="document.getElementById('milestoneBaseRate').value = this.value;">
+                        <option value="0.33">0.97折</option>
+                        <option value="0.32">0.93折</option>
+                        <option value="0.31">0.88折</option>
+                        <option value="0.30" selected>0.83折</option>
+                        <option value="0.29">0.77折</option>
+                        <option value="0.28">0.73折</option>
+                        <option value="0.27">0.68折</option>
+                        <option value="0.26">0.63折</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label>基準匯率 (可手動修改)：</label>
+                    <input type="number" id="milestoneBaseRate" value="0.30" step="0.01" class="price-input" title="系統會自動以此數字進行滿額減碼">
+                </div>
+            </div>
+        </div>
+
         <div class="form-group" id="jpShipGroup">
             <input type="text" id="jpShipInput" placeholder="日本國內運費（日幣）" class="price-input">
         </div>
@@ -635,7 +659,7 @@
     }
 
     function setupEnterKeyBindings() {
-        const inputs = ['jpyInput', 'jpShipInput', 'rateInput', 'shipInput'];
+        const inputs = ['jpyInput', 'jpShipInput', 'milestoneBaseRate', 'rateInput', 'shipInput'];
         inputs.forEach(id => {
             const element = document.getElementById(id);
             if (element) {
@@ -674,16 +698,19 @@
     function updatePricingFields() {
         const m = parseInt(document.getElementById('modeSelector').value);
         document.getElementById('jpShipGroup').style.display = (m === 0) ? 'block' : 'none';
-        const showRate = (m === 0 || m === 2 || m === 3);
+        const showRate = (m === 0 || m === 2 || m === 3 || m === 4);
         document.getElementById('rateGroup').style.display = showRate ? 'block' : 'none';
         const showShip = (m === 0 || m === 3);
         document.getElementById('shipGroup').style.display = showShip ? 'block' : 'none';
+        document.getElementById('milestoneGroup').style.display = (m === 4) ? 'block' : 'none';
 
         const rateInput = document.getElementById('rateInput');
         if (m === 2) { 
             rateInput.placeholder = "請輸入含利潤的匯率/係數 (e.g., 0.23)";
+        } else if (m === 4) {
+            rateInput.placeholder = "當下匯率底線 (預設 0.21)";
         } else {
-            rateInput.placeholder = "目前匯率 (e.g., 4.5)";
+            rateInput.placeholder = "目前匯率 (e.g., 4.5 或 0.22)";
         }
     }
 
@@ -720,6 +747,21 @@
         } else if (mode === 3) {
             localStorage.setItem('tool_last_rate', rate);
             result = (jpy * 1.15 * rate + ship) / 0.8; rateDisplay = `@匯率${rate}`;
+        } else if (mode === 4) {
+            let baseR = parseFloat(document.getElementById('milestoneBaseRate').value);
+            let floorR = rate > 0 ? rate : 0.21;
+            let drop = 0;
+            if (jpy >= 10000) {
+                drop = 3 + Math.floor((jpy - 10000) / 5000);
+            } else if (jpy >= 6000) {
+                drop = 2;
+            } else if (jpy >= 3000) {
+                drop = 1;
+            }
+            let finalR = Math.max(floorR, baseR - drop * 0.01);
+            if (rate > 0) localStorage.setItem('tool_last_rate', rate);
+            result = (jpy * 1.05 * finalR) / 0.95;
+            rateDisplay = `[MS折數] 最終匯率${finalR.toFixed(2)}`;
         }
 
         const final = result.toFixed(2);
@@ -737,6 +779,15 @@
             cost = jpy * 1.05 * currentRate;
         } else if (mode === 3) {
             cost = jpy * rate + ship;
+        } else if (mode === 4) {
+            let baseR = parseFloat(document.getElementById('milestoneBaseRate').value);
+            let floorR = rate > 0 ? rate : 0.21;
+            let drop = 0;
+            if (jpy >= 10000) drop = 3 + Math.floor((jpy - 10000) / 5000);
+            else if (jpy >= 6000) drop = 2;
+            else if (jpy >= 3000) drop = 1;
+            let finalR = Math.max(floorR, baseR - drop * 0.01);
+            cost = jpy * 1.05 * finalR;
         }
 
         const feeRate = parseFloat(document.getElementById('profitFeeRate').value) / 100 || 0.03;
@@ -748,13 +799,13 @@
         const paymentFee = Math.round(result * paymentFeeRate);
         
         const outputTax = Math.round(result * taxRate);
-        const inputTax = (mode === 1 || mode === 2) ? Math.round(cost * taxRate) : 0;
+        const inputTax = (mode === 1 || mode === 2 || mode === 4) ? Math.round(cost * taxRate) : 0;
         const tax = Math.max(0, outputTax - inputTax);
 
         const profit = result - cost - fee - paymentFee - tax;
         const margin = result > 0 ? ((profit / result) * 100).toFixed(2) : 0;
 
-        const taxTip = (mode === 1 || mode === 2) ? " (已扣除進項稅額)" : "";
+        const taxTip = (mode === 1 || mode === 2 || mode === 4) ? " (已扣除進項稅額)" : "";
 
         document.getElementById('priceResult').innerHTML = `
             建議售價：NT$ ${final}<br>
@@ -902,7 +953,6 @@
         try { const text = await navigator.clipboard.readText(); document.getElementById('shopInput').value = text; openShop(); } catch (err) { alert('無法讀取剪貼簿，請手動貼上'); }
     }
 
-    // === 完全還原的 Getchu/Sofmap/Trader 原生表單提交法 ===
     function doSearch(platform) {
         const keyword = document.getElementById('searchKeyword').value.trim();
         if (!keyword) { alert('請先輸入搜尋關鍵字！'); return; }
@@ -923,14 +973,12 @@
                 const input = document.createElement('input'); input.type = 'hidden'; input.name = 'search'; input.value = keyword;
                 form.appendChild(input);
             } else if (platform === 'getchu') {
-                form.action = 'https://www.getchu.com/php/search.phtml'; // 升級成 https
-                form.acceptCharset = 'EUC-JP'; // 原生指定 EUC-JP
+                form.action = 'https://www.getchu.com/php/search.phtml';
+                form.acceptCharset = 'EUC-JP';
                 const input = document.createElement('input'); input.type = 'hidden'; input.name = 'search_keyword'; input.value = keyword;
                 form.appendChild(input);
             }
-            document.body.appendChild(form); 
-            form.submit(); 
-            document.body.removeChild(form);
+            document.body.appendChild(form); form.submit(); document.body.removeChild(form);
             return;
         }
 
