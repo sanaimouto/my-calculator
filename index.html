@@ -291,6 +291,26 @@
             transition: opacity 0.2s;
         }
         .img-card:hover .delete-btn { opacity: 1; }
+
+        /* 自訂費用名稱輸入框樣式 */
+        .fee-name-input {
+            font-weight: bold;
+            color: #34495e;
+            font-size: 14px;
+            border: 1px dashed #bdc3c7;
+            border-radius: 4px;
+            padding: 2px 5px;
+            margin-bottom: 5px;
+            width: 100%;
+            box-sizing: border-box;
+            background: transparent;
+            transition: 0.3s;
+        }
+        .fee-name-input:focus {
+            background: #fff;
+            border-color: var(--accent-color);
+            outline: none;
+        }
     </style>
 </head>
 <body>
@@ -381,20 +401,33 @@
             <label>商品售價：</label>
             <input type="text" id="profitPrice" placeholder="請輸入商品售價（可輸入算式）" class="profit-input">
         </div>
-        <div style="display: flex; gap: 10px;">
-            <div class="form-group" style="flex: 1;">
-                <label>成交費 (%)：</label>
-                <input type="number" id="profitFeeRate" value="3" step="0.1" class="profit-input" title="上限以售價 20,000 計算">
+        
+        <!-- 動態規費區塊：開放使用者自訂名稱與比例 -->
+        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+            <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                <input type="text" id="feeName1" class="fee-name-input" value="成交費" onchange="saveProfitSettings()">
+                <input type="number" id="profitFeeRate" value="3" step="0.1" class="profit-input" title="上限以售價 20,000 計算" onchange="saveProfitSettings()">
             </div>
-            <div class="form-group" style="flex: 1;">
-                <label>金流費 (%)：</label>
-                <input type="number" id="profitPaymentFeeRate" value="1.5" step="0.1" class="profit-input" title="無上限">
+            <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                <input type="text" id="feeName2" class="fee-name-input" value="金流費" onchange="saveProfitSettings()">
+                <input type="number" id="profitPaymentFeeRate" value="1.5" step="0.1" class="profit-input" title="無上限" onchange="saveProfitSettings()">
             </div>
-            <div class="form-group" style="flex: 1;">
-                <label>發票稅 (%)：</label>
-                <input type="number" id="profitTaxRate" value="5" step="0.1" class="profit-input" title="台灣標準營業稅為 5%">
+            <div class="form-group" style="flex: 1; margin-bottom: 0;">
+                <input type="text" id="feeName3" class="fee-name-input" value="營銷費" onchange="saveProfitSettings()">
+                <input type="number" id="profitPromoFeeRate" value="2" step="0.1" class="profit-input" title="無上限" onchange="saveProfitSettings()">
             </div>
         </div>
+        <div style="display: flex; gap: 10px;">
+            <div class="form-group" style="flex: 1;">
+                <input type="text" id="feeName4" class="fee-name-input" value="發票稅" onchange="saveProfitSettings()">
+                <input type="number" id="profitTaxRate" value="5" step="0.1" class="profit-input" title="進項扣抵邏輯綁定此欄位" onchange="saveProfitSettings()">
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label>目標利潤 (%)：</label>
+                <input type="number" id="targetProfitRate" value="10" step="0.1" class="profit-input" title="自動連動通販計價的除數" onchange="saveProfitSettings()">
+            </div>
+        </div>
+
         <button class="action-btn" onclick="calculateProfit()" style="background-color: #27ae60;">💰 計算利潤</button>
         <div class="result-box" id="profitResult">
             淨利潤：<br>
@@ -625,6 +658,7 @@
         setupEnterKeyBindings();
         setupProfitEnter(); 
         loadCardSettings(); 
+        loadProfitSettings();
         initCardDate(); 
 
         const shopInput = document.getElementById('shopInput');
@@ -719,6 +753,30 @@
         if (savedRate) document.getElementById('rateInput').value = savedRate;
     }
 
+    function saveProfitSettings() {
+        localStorage.setItem('tool_fee_name1', document.getElementById('feeName1').value);
+        localStorage.setItem('tool_fee_name2', document.getElementById('feeName2').value);
+        localStorage.setItem('tool_fee_name3', document.getElementById('feeName3').value);
+        localStorage.setItem('tool_fee_name4', document.getElementById('feeName4').value);
+        localStorage.setItem('tool_fee_rate1', document.getElementById('profitFeeRate').value);
+        localStorage.setItem('tool_fee_rate2', document.getElementById('profitPaymentFeeRate').value);
+        localStorage.setItem('tool_fee_rate3', document.getElementById('profitPromoFeeRate').value);
+        localStorage.setItem('tool_fee_rate4', document.getElementById('profitTaxRate').value);
+        localStorage.setItem('tool_target_profit', document.getElementById('targetProfitRate').value);
+    }
+
+    function loadProfitSettings() {
+        if (localStorage.getItem('tool_fee_name1')) document.getElementById('feeName1').value = localStorage.getItem('tool_fee_name1');
+        if (localStorage.getItem('tool_fee_name2')) document.getElementById('feeName2').value = localStorage.getItem('tool_fee_name2');
+        if (localStorage.getItem('tool_fee_name3')) document.getElementById('feeName3').value = localStorage.getItem('tool_fee_name3');
+        if (localStorage.getItem('tool_fee_name4')) document.getElementById('feeName4').value = localStorage.getItem('tool_fee_name4');
+        if (localStorage.getItem('tool_fee_rate1')) document.getElementById('profitFeeRate').value = localStorage.getItem('tool_fee_rate1');
+        if (localStorage.getItem('tool_fee_rate2')) document.getElementById('profitPaymentFeeRate').value = localStorage.getItem('tool_fee_rate2');
+        if (localStorage.getItem('tool_fee_rate3')) document.getElementById('profitPromoFeeRate').value = localStorage.getItem('tool_fee_rate3');
+        if (localStorage.getItem('tool_fee_rate4')) document.getElementById('profitTaxRate').value = localStorage.getItem('tool_fee_rate4');
+        if (localStorage.getItem('tool_target_profit')) document.getElementById('targetProfitRate').value = localStorage.getItem('tool_target_profit');
+    }
+
     function calculatePrice() {
         const mode = parseInt(document.getElementById('modeSelector').value);
         const jpy = evalExpr(document.getElementById('jpyInput').value);
@@ -726,11 +784,26 @@
         const rate = evalExpr(document.getElementById('rateInput').value);
         const ship = evalExpr(document.getElementById('shipInput').value);
 
+        const feeRate = parseFloat(document.getElementById('profitFeeRate').value) / 100 || 0;
+        const paymentFeeRate = parseFloat(document.getElementById('profitPaymentFeeRate').value) / 100 || 0;
+        const promoFeeRate = parseFloat(document.getElementById('profitPromoFeeRate').value) / 100 || 0;
+        const taxRate = parseFloat(document.getElementById('profitTaxRate').value) / 100 || 0;
+        const targetProfitRate = parseFloat(document.getElementById('targetProfitRate').value) / 100 || 0.1;
+        const n4 = document.getElementById('feeName4').value || '發票稅';
+        
+        const totalFeeRate = feeRate + paymentFeeRate + promoFeeRate + taxRate;
+        
+        const dynamicDivisor = 1 - totalFeeRate - targetProfitRate;
+        const divisor = (dynamicDivisor > 0 && dynamicDivisor < 1) ? dynamicDivisor : 0.8;
+
+        const dynamicEventDivisor = 1 - totalFeeRate - 0.20;
+        const eventDivisor = (dynamicEventDivisor > 0 && dynamicEventDivisor < 1) ? dynamicEventDivisor : 0.685;
+
         let result = 0; let rateDisplay = ''; 
 
         if (mode === 0) {
             localStorage.setItem('tool_last_rate', rate);
-            result = ((jpy + jpShip) * rate + ship) / 0.8;
+            result = ((jpy + jpShip) * rate + ship) / divisor;
             rateDisplay = `@匯率${rate}`;
         } else if (mode === 1) {
             let base = 0;
@@ -738,15 +811,16 @@
             else if (jpy >= 4000 && jpy <= 7999) { base = jpy * 1.05 * 0.26 + 50; base += (base <= 1999) ? 100 : 200; }
             else if (jpy >= 8000 && jpy <= 11999) { base = jpy * 1.05 * 0.25 + 50; base += (base <= 2999) ? 200 : 300; }
             else { base = jpy * 1.05 * 0.245 + 50; if (base <= 3999) base += 300; else if (base <= 4999) base += 400; else if (base <= 5999) base += 500; else if (base <= 6999) base += 600; else base += 700; }
-            result = base / 0.95; rateDisplay = `[固定係數]`;
+            result = base / 0.93; rateDisplay = `[固定係數]`;
         } else if (mode === 2) {
             localStorage.setItem('tool_last_rate', rate);
             let base = jpy * 1.05 * rate; 
             if (base <= 1000) base += 50; else if (base <= 1999) base += 100; else if (base <= 2999) base += 200; else if (base <= 3999) base += 300; else base += 400;
-            result = base / 0.95; rateDisplay = `@係數${rate}`;
+            result = base / 0.93; rateDisplay = `@係數${rate}`;
         } else if (mode === 3) {
             localStorage.setItem('tool_last_rate', rate);
-            result = (jpy * 1.15 * rate + ship) / 0.8; rateDisplay = `@匯率${rate}`;
+            result = (jpy * rate + ship) / eventDivisor; 
+            rateDisplay = `@匯率${rate}`;
         } else if (mode === 4) {
             let baseR = parseFloat(document.getElementById('milestoneBaseRate').value);
             let floorR = rate > 0 ? rate : 0.21;
@@ -760,7 +834,7 @@
             }
             let finalR = Math.max(floorR, baseR - drop * 0.01);
             if (rate > 0) localStorage.setItem('tool_last_rate', rate);
-            result = (jpy * 1.05 * finalR) / 0.95;
+            result = (jpy * 1.05 * finalR) / 0.93;
             rateDisplay = `[MS折數] 最終匯率${finalR.toFixed(2)}`;
         }
 
@@ -790,19 +864,16 @@
             cost = jpy * 1.05 * finalR;
         }
 
-        const feeRate = parseFloat(document.getElementById('profitFeeRate').value) / 100 || 0.03;
-        const paymentFeeRate = parseFloat(document.getElementById('profitPaymentFeeRate').value) / 100 || 0.015;
-        const taxRate = parseFloat(document.getElementById('profitTaxRate').value) / 100 || 0.05;
-
         const feeBase = Math.min(result, 20000);
         const fee = Math.round(feeBase * feeRate);
         const paymentFee = Math.round(result * paymentFeeRate);
+        const promoFee = Math.round(result * promoFeeRate);
         
         const outputTax = Math.round(result * taxRate);
         const inputTax = (mode === 1 || mode === 2 || mode === 4) ? Math.round(cost * taxRate) : 0;
         const tax = Math.max(0, outputTax - inputTax);
 
-        const profit = result - cost - fee - paymentFee - tax;
+        const profit = result - cost - fee - paymentFee - promoFee - tax;
         const margin = result > 0 ? ((profit / result) * 100).toFixed(2) : 0;
 
         const taxTip = (mode === 1 || mode === 2 || mode === 4) ? " (已扣除進項稅額)" : "";
@@ -810,7 +881,7 @@
         document.getElementById('priceResult').innerHTML = `
             建議售價：NT$ ${final}<br>
             <span style="font-size: 14px; color: #7f8c8d; font-weight: normal;">
-                (預估成本: NT$ ${Math.round(cost)} | 應繳發票稅: NT$ ${tax}${taxTip} | 淨利: NT$ ${Math.round(profit)} | 利潤率: ${margin}%)
+                (預估成本: NT$ ${Math.round(cost)} | 應繳${n4}: NT$ ${tax}${taxTip} | 淨利: NT$ ${Math.round(profit)} | 利潤率: ${margin}%)
             </span>`;
         
         const modeName = document.getElementById('modeSelector').options[mode].text;
@@ -842,10 +913,17 @@
     function calculateProfit() {
         const cost = evalSafe(document.getElementById('profitCost').value);
         const price = evalSafe(document.getElementById('profitPrice').value);
+        
         const feeRate = parseFloat(document.getElementById('profitFeeRate').value) / 100 || 0;
         const paymentFeeRate = parseFloat(document.getElementById('profitPaymentFeeRate').value) / 100 || 0;
+        const promoFeeRate = parseFloat(document.getElementById('profitPromoFeeRate').value) / 100 || 0;
         const taxRate = parseFloat(document.getElementById('profitTaxRate').value) / 100 || 0;
         const hasInputTax = document.getElementById('profitHasInputTax').checked;
+
+        const n1 = document.getElementById('feeName1').value || '規費1';
+        const n2 = document.getElementById('feeName2').value || '規費2';
+        const n3 = document.getElementById('feeName3').value || '規費3';
+        const n4 = document.getElementById('feeName4').value || '規費4';
 
         if (price <= 0) {
             document.getElementById('profitResult').innerHTML = "淨利潤：0<br>利潤率：0%";
@@ -856,21 +934,22 @@
         const feeBase = Math.min(price, 20000);
         const fee = Math.round(feeBase * feeRate);
         const paymentFee = Math.round(price * paymentFeeRate);
+        const promoFee = Math.round(price * promoFeeRate);
         
         const outputTax = Math.round(price * taxRate);
         const inputTax = hasInputTax ? Math.round(cost * taxRate) : 0;
         const tax = Math.max(0, outputTax - inputTax);
 
-        const profit = price - cost - fee - paymentFee - tax;
+        const profit = price - cost - fee - paymentFee - promoFee - tax;
         const margin = (profit / price) * 100;
 
         document.getElementById('profitResult').innerHTML = `淨利潤：NT$ ${profit.toFixed(2)}<br>利潤率：${margin.toFixed(2)}%`;
         
-        let detailStr = `扣除明細：\n成本 = NT$ ${cost.toFixed(2)}\n成交費 (${feeRate * 100}%, 最高2萬計) = NT$ ${fee}\n金流費 (${paymentFeeRate * 100}%, 無上限) = NT$ ${paymentFee}`;
+        let detailStr = `扣除明細：\n成本 = NT$ ${cost.toFixed(2)}\n${n1} (${feeRate * 100}%, 最高2萬計) = NT$ ${fee}\n${n2} (${paymentFeeRate * 100}%, 無上限) = NT$ ${paymentFee}\n${n3} (${promoFeeRate * 100}%) = NT$ ${promoFee}`;
         if (hasInputTax) {
-            detailStr += `\n發票稅 (銷項 NT$${outputTax} - 進項抵扣 NT$${inputTax}) = NT$ ${tax}`;
+            detailStr += `\n${n4} (銷項 NT$${outputTax} - 進項抵扣 NT$${inputTax}) = NT$ ${tax}`;
         } else {
-            detailStr += `\n發票稅 (${taxRate * 100}%) = NT$ ${tax}`;
+            detailStr += `\n${n4} (${taxRate * 100}%) = NT$ ${tax}`;
         }
         document.getElementById('profitDetail').innerText = detailStr;
     }
@@ -950,7 +1029,7 @@
     }
 
     async function pasteToShopInput() {
-        try { const text = await navigator.clipboard.readText(); document.getElementById('shopInput').value = text; openShop(); } catch (err) { alert('無法讀取剪貼簿，請手動貼上'); }
+        try { const text = await navigator.clipboard.readText(); document.getElementById('shopInput').value = text; openShop(); } catch (err) { alert('無法讀取剪貼簿，請手手動貼上'); }
     }
 
     function doSearch(platform) {
